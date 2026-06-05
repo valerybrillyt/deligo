@@ -5,7 +5,9 @@
       <span class="logo-name">Deli<span>Go</span></span>
     </a>
     <nav class="nav">
-      <a routerLink="/restaurantes" routerLinkActive="active">Pedir</a>
+      @if (usuarioNombre) {
+        <a routerLink="/restaurantes" routerLinkActive="active">Pedir</a>
+      }
       @if (usuarioNombre) {
         <a routerLink="/seguimiento" routerLinkActive="active">Mis pedidos</a>
         <div class="user-menu">

@@ -139,13 +139,16 @@ function aplicarSeed(db) {
     const insRest = db.prepare(
       'INSERT INTO restaurantes (nombre, direccion, latitud, longitud) VALUES (?,?,?,?)'
     );
-    RESTAURANTES.forEach((r) => insRest.run(r.nombre, r.direccion, r.lat, r.lng));
+    const restIds = RESTAURANTES.map((r) => {
+      const info = insRest.run(r.nombre, r.direccion, r.lat, r.lng);
+      return Number(info.lastInsertRowid);
+    });
 
     const insProd = db.prepare(
       'INSERT INTO productos (restaurante_id, nombre, descripcion, precio, categoria) VALUES (?,?,?,?,?)'
     );
     PRODUCTOS_POR_REST.forEach((items, idx) => {
-      const restId = idx + 1;
+      const restId = restIds[idx];
       items.forEach(([nombre, desc, precio, cat]) => {
         insProd.run(restId, nombre, desc, precio, cat);
       });
@@ -186,9 +189,14 @@ function asegurarPedidosDemo(db) {
   const ins = db.prepare(
     'INSERT INTO pedidos (usuario_id, restaurante_id, tipo, descripcion_extra, total, estado) VALUES (?,?,?,?,?,?)'
   );
-  ins.run(demo.id, 1, 'estandar', 'Propina incluida', 189.5, 'entregado');
-  ins.run(demo.id, 2, 'express', 'Seguro de envío', 245, 'en_camino');
-  ins.run(demo.id, 4, 'estandar', '', 156, 'preparando');
+  const rest = (nombre) =>
+    db.prepare('SELECT id FROM restaurantes WHERE nombre = ?').get(nombre)?.id;
+  const pizza = rest('Pizza Express');
+  const sushi = rest('Sushi House');
+  const tacos = rest('Tacos El Güero');
+  if (pizza) ins.run(demo.id, pizza, 'estandar', 'Propina incluida', 189.5, 'entregado');
+  if (sushi) ins.run(demo.id, sushi, 'express', 'Seguro de envío', 245, 'en_camino');
+  if (tacos) ins.run(demo.id, tacos, 'estandar', '', 156, 'preparando');
 }
 
 module.exports = { SEED_VERSION, aplicarSeed, USUARIOS_DEMO };

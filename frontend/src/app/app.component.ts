@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
+import { ApiService } from './services/api.service';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     private auth: AuthService,
+    private api: ApiService,
     private router: Router
   ) {}
 
@@ -32,7 +34,9 @@ export class AppComponent implements OnInit {
   }
 
   cerrarSesion() {
+    const uid = this.auth.getUsuarioId();
+    this.api.registrarLog('SESION_CERRADA', `usuario_id=${uid}`).subscribe({ error: () => {} });
     this.auth.cerrarSesion();
-    this.router.navigate(['/']);
+    this.router.navigate(['/login']);
   }
 }

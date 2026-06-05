@@ -1,40 +1,50 @@
 <section class="hero">
   <div class="hero-content">
-    <h1>Tu comida favorita,<br />a domicilio</h1>
-    <p>Restaurantes cerca de ti. Pide en minutos y sigue tu entrega en vivo.</p>
-    <a routerLink="/restaurantes" class="btn-hero">Pedir ahora</a>
-    @if (!auth.estaLogueado()) {
+    @if (auth.estaLogueado()) {
+      <p class="eyebrow">Hola, {{ auth.getNombre() }}</p>
+      <h1>¿Qué quieres pedir hoy?</h1>
+      <p>Explora restaurantes, arma tu pedido y sigue la entrega en vivo.</p>
+      <a routerLink="/restaurantes" class="btn-hero">Ver restaurantes</a>
+      <a routerLink="/seguimiento" class="btn-secondary">Mis pedidos</a>
+    } @else {
+      <h1>Tu comida favorita,<br />a domicilio</h1>
+      <p>DeliGo es un servicio con cuenta personal. Inicia sesión para ver restaurantes, pedir y rastrear tus órdenes.</p>
+      <a routerLink="/login" class="btn-hero">Iniciar sesión</a>
       <p class="sub-cta">¿Nuevo? <a routerLink="/registro">Crea tu cuenta gratis</a></p>
     }
   </div>
-  <div class="hero-visual">
-    @for (r of destacados; track r.id; let i = $index) {
-      <a [routerLink]="['/menu', r.id]" class="float-card" [class]="'c' + ((i % 3) + 1)">
-        {{ icono(r.nombre) }} {{ r.nombre }}
-      </a>
-    }
-    @if (!destacados.length) {
-      <div class="float-card c1">🍕 Pizza Express</div>
-      <div class="float-card c2">🍣 Sushi House</div>
-      <div class="float-card c3">🍔 Burger Zone</div>
-    }
-  </div>
+
+  @if (auth.estaLogueado()) {
+    <div class="hero-visual">
+      @for (r of destacados; track r.id; let i = $index) {
+        <a [routerLink]="['/menu', r.id]" class="float-card" [class]="'c' + ((i % 3) + 1)">
+          {{ icono(r.nombre) }} {{ r.nombre }}
+        </a>
+      }
+    </div>
+  } @else {
+    <div class="hero-visual guest">
+      <div class="guest-card">🔐 Sesión requerida para pedir</div>
+      <div class="guest-card">📍 Dirección guardada en tu cuenta</div>
+      <div class="guest-card">📦 Seguimiento de pedidos en vivo</div>
+    </div>
+  }
 </section>
 
 <section class="steps">
   <div class="step">
     <span class="num">1</span>
-    <h3>Elige restaurante</h3>
-    <p>Explora locales con menú completo</p>
+    <h3>Crea tu cuenta</h3>
+    <p>Registro rápido con tu correo</p>
   </div>
   <div class="step">
     <span class="num">2</span>
-    <h3>Arma tu pedido</h3>
-    <p>Agrega platillos y opciones de envío</p>
+    <h3>Elige y pide</h3>
+    <p>Restaurantes, menú y carrito</p>
   </div>
   <div class="step">
     <span class="num">3</span>
-    <h3>Recíbelo en casa</h3>
-    <p>Sigue el repartidor en el mapa</p>
+    <h3>Sigue tu entrega</h3>
+    <p>Estado del pedido en tiempo real</p>
   </div>
 </section>

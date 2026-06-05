@@ -85,6 +85,18 @@ class DatabaseConnection {
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
         FOREIGN KEY (restaurante_id) REFERENCES restaurantes(id)
       );
+
+      CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario_id INTEGER,
+        accion TEXT NOT NULL,
+        detalle TEXT DEFAULT '',
+        ruta TEXT DEFAULT '',
+        ip TEXT DEFAULT '',
+        exito INTEGER DEFAULT 1,
+        creado_en TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+      );
     `);
   }
 

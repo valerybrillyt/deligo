@@ -25,6 +25,23 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .btn-hero:hover { transform: translateY(-2px); box-shadow: 0 16px 40px var(--primary-glow); }
+.btn-secondary {
+  display: inline-block;
+  margin-left: 0.75rem;
+  padding: 1.1rem 1.5rem;
+  border-radius: 14px;
+  border: 2px solid var(--border);
+  font-weight: 700;
+  color: var(--text);
+}
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  margin: 0 0 0.5rem;
+}
 .sub-cta { margin-top: 1.25rem; font-size: 0.95rem; color: var(--muted); }
 .sub-cta a { color: var(--primary); font-weight: 700; }
 .hero-visual {
@@ -36,6 +53,21 @@
 .float-card {
   position: absolute; background: var(--card); padding: 1rem 1.35rem;
   border-radius: 14px; box-shadow: var(--shadow); font-weight: 700; font-size: 0.95rem;
+}
+.hero-visual.guest {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+.guest-card {
+  background: var(--card);
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 .c1 { top: 12%; left: 8%; }
 .c2 { top: 42%; right: 5%; }

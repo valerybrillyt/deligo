@@ -22,6 +22,11 @@ export class AuthService {
     this.usuario$.next(nombre);
   }
 
+  getUsuarioId(): number | null {
+    const id = localStorage.getItem('usuarioId');
+    return id ? Number(id) : null;
+  }
+
   cerrarSesion() {
     localStorage.removeItem('usuarioId');
     localStorage.removeItem('usuarioNombre');

@@ -43,6 +43,19 @@ CREATE TABLE IF NOT EXISTS pedidos (
   FOREIGN KEY (restaurante_id) REFERENCES restaurantes(id)
 );
 
+-- Auditoría: qué hizo cada usuario (por si falla la app o hay que reconstruir el flujo)
+CREATE TABLE IF NOT EXISTS logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT NULL,
+  accion VARCHAR(80) NOT NULL,
+  detalle TEXT,
+  ruta VARCHAR(255) DEFAULT '',
+  ip VARCHAR(45) DEFAULT '',
+  exito TINYINT DEFAULT 1,
+  creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
 INSERT INTO restaurantes (nombre, direccion, latitud, longitud) VALUES
 ('Pizza Express', 'Av. Central 100', 19.4326000, -99.1332000),
 ('Sushi House', 'Calle Mar 45', 19.4350000, -99.1400000),

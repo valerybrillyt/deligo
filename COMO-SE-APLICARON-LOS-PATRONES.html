@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Cómo se aplicaron los patrones de diseño — DeliGo</title>
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.5; margin: 2cm; color: #222; }
+  h1 { font-size: 20pt; color: #ff4d00; border-bottom: 2px solid #ff4d00; padding-bottom: 8px; }
+  h2 { font-size: 14pt; color: #18181b; margin-top: 24px; }
+  h3 { font-size: 12pt; color: #444; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; }
+  th { background: #fff7ed; font-weight: bold; }
+  .intro { background: #f8f8f9; padding: 12px; border-left: 4px solid #ff4d00; }
+  code { background: #f0f0f0; padding: 2px 5px; font-family: Consolas, monospace; font-size: 10pt; }
+  ul { margin: 8px 0; }
+  .footer { margin-top: 40px; font-size: 9pt; color: #666; border-top: 1px solid #ddd; padding-top: 12px; }
+</style>
+</head>
+<body>
+
+<h1>Cómo se aplicaron los patrones de diseño — DeliGo</h1>
+
+<div class="intro">
+  <p><strong>Proyecto:</strong> Sistema de delivery online (Caso de estudio 4)<br>
+  <strong>Stack:</strong> Frontend Angular · Backend Node.js · Base de datos SQLite<br>
+  <strong>Repositorio:</strong> https://github.com/valerybrillyt/deligo</p>
+</div>
+
+<h2>1. Introducción</h2>
+<p>En DeliGo se implementaron <strong>cuatro patrones de diseño</strong> del curso. Todos están en el <strong>backend</strong> (carpeta <code>backend/patterns/</code>). El frontend no implementa los patrones: consume el API y muestra el resultado (menú, tipos de entrega, extras, login). La base de datos solo guarda datos; los patrones son lógica en JavaScript.</p>
+
+<h2>2. Resumen rápido</h2>
+<table>
+  <tr><th>Patrón</th><th>Archivo backend</th><th>Pantalla web</th></tr>
+  <tr><td><strong>Singleton</strong></td><td><code>patterns/singleton/databaseConnection.js</code></td><td>Todo el API (conexión a deligo.db)</td></tr>
+  <tr><td><strong>Singleton</strong></td><td><code>patterns/singleton/authService.js</code></td><td>Login</td></tr>
+  <tr><td><strong>Factory</strong></td><td><code>patterns/factory/orderFactory.js</code></td><td>Menú → tipo de pedido</td></tr>
+  <tr><td><strong>Decorator</strong></td><td><code>patterns/decorator/orderDecorator.js</code></td><td>Menú → extras</td></tr>
+  <tr><td><strong>Composite</strong></td><td><code>patterns/composite/menuComposite.js</code></td><td>Menú → categorías</td></tr>
+</table>
+
+<h2>3. Singleton</h2>
+
+<h3>3.1 Conexión a la base de datos</h3>
+<p><strong>Archivo:</strong> <code>backend/patterns/singleton/databaseConnection.js</code></p>
+<p>Garantiza <strong>una sola instancia</strong> de conexión a SQLite (<code>database/deligo.db</code>). Todas las rutas del API usan la misma conexión.</p>
+
+<h3>3.2 Servicio de autenticación</h3>
+<p><strong>Archivo:</strong> <code>backend/patterns/singleton/authService.js</code></p>
+<p>Una sola instancia guarda las sesiones (tokens). Al iniciar sesión en la pantalla <strong>Login</strong>, el backend llama a <code>authService.login()</code>.</p>
+
+<h2>4. Factory (Fábrica)</h2>
+<p><strong>Archivo:</strong> <code>backend/patterns/factory/orderFactory.js</code></p>
+<p>Crea el tipo correcto de pedido según la opción del usuario:</p>
+<table>
+  <tr><th>Tipo</th><th>Clase</th><th>Tiempo</th><th>Envío</th></tr>
+  <tr><td>estándar</td><td>PedidoEstandar</td><td>45 min</td><td>$3.50</td></tr>
+  <tr><td>express</td><td>PedidoExpress</td><td>20 min</td><td>$6.00</td></tr>
+  <tr><td>programado</td><td>PedidoProgramado</td><td>60 min</td><td>$2.00</td></tr>
+</table>
+<p><strong>Función:</strong> <code>crearPedido(tipo, datos)</code> — usada en <strong>Menú</strong> al confirmar pedido.</p>
+
+<h2>5. Decorator (Decorador)</h2>
+<p><strong>Archivo:</strong> <code>backend/patterns/decorator/orderDecorator.js</code></p>
+<p>Añade extras al pedido sin modificar las clases de la Factory:</p>
+<table>
+  <tr><th>Código</th><th>Nombre</th><th>Costo</th></tr>
+  <tr><td>propina</td><td>Propina para el repartidor</td><td>$2.00</td></tr>
+  <tr><td>seguro</td><td>Protección del pedido</td><td>$1.50</td></tr>
+  <tr><td>eco</td><td>Empaque sustentable</td><td>$0.75</td></tr>
+</table>
+<p><strong>Función:</strong> <code>aplicarDecoradores(pedido, extras)</code></p>
+
+<h2>6. Composite (Compuesto)</h2>
+<p><strong>Archivo:</strong> <code>backend/patterns/composite/menuComposite.js</code></p>
+<p>Organiza el menú en árbol: <strong>categorías</strong> (compuestos) y <strong>productos</strong> (hojas).</p>
+<pre>
+Menú DeliGo (raíz)
+ └── Pizzas → Pizza Margarita, Pizza Pepperoni
+ └── Bebidas → Refresco 600ml
+</pre>
+<p><strong>Función:</strong> <code>construirMenuDesdeProductos(productos)</code> — el menú se muestra agrupado por categoría.</p>
+
+<h2>7. Flujo al hacer un pedido</h2>
+<ol>
+  <li>Usuario abre <strong>Menú</strong> → Composite arma categorías y productos.</li>
+  <li>Elige tipo de entrega → Factory crea el pedido (estándar, express o programado).</li>
+  <li>Marca extras → Decorator suma propina, seguro o empaque eco.</li>
+  <li>Confirma → Singleton de BD guarda en SQLite.</li>
+  <li>Usuario ve el pedido en <strong>Seguimiento</strong>.</li>
+</ol>
+<p>Ruta del API: <code>POST /api/pedidos</code> en <code>backend/routes/api.js</code></p>
+
+<h2>8. Endpoints del API</h2>
+<table>
+  <tr><th>Ruta</th><th>Descripción</th></tr>
+  <tr><td>GET /api/patrones</td><td>Documentación JSON de los 4 patrones</td></tr>
+  <tr><td>GET /api/pedidos/tipos</td><td>Tipos de la Factory</td></tr>
+  <tr><td>GET /api/pedidos/extras</td><td>Extras del Decorator</td></tr>
+  <tr><td>GET /api/restaurantes/:id/menu</td><td>Menú con árbol Composite</td></tr>
+  <tr><td>POST /api/usuarios/login</td><td>Login (Singleton authService)</td></tr>
+  <tr><td>POST /api/pedidos</td><td>Crear pedido (Factory + Decorator)</td></tr>
+</table>
+<p>Pantalla académica: <code>http://localhost:4200/patrones</code></p>
+
+<h2>9. Frases para la exposición</h2>
+<ul>
+  <li><strong>Singleton:</strong> Una sola conexión a la BD y un solo servicio de sesiones.</li>
+  <li><strong>Factory:</strong> La fábrica crea el pedido según el tipo de entrega elegido.</li>
+  <li><strong>Decorator:</strong> Los extras se agregan envolviendo el pedido sin cambiar la fábrica.</li>
+  <li><strong>Composite:</strong> El menú se organiza por categorías en forma de árbol.</li>
+</ul>
+
+<div class="footer">
+  <p>Documento DeliGo — Equipo Proyecto de Diseño de Patrones · GitHub: valerybrillyt/deligo</p>
+</div>
+
+</body>
+</html>

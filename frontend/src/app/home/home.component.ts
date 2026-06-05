@@ -19,6 +19,7 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    if (!this.auth.estaLogueado()) return;
     this.api.getRestaurantes().subscribe({
       next: (data) => (this.destacados = data.slice(0, 6)),
     });

@@ -51,6 +51,28 @@ export class ApiService {
   actualizarEstado(pedidoId: number, estado: string) {
     return this.http.patch(`${API}/pedidos/${pedidoId}/estado`, { estado });
   }
+
+  registrarLog(accion: string, detalle = '', ruta = '') {
+    const usuarioId = Number(localStorage.getItem('usuarioId')) || null;
+    return this.http.post(`${API}/logs`, { usuarioId, accion, detalle, ruta });
+  }
+
+  getLogs(usuarioId?: number) {
+    const q = usuarioId ? `?usuarioId=${usuarioId}` : '';
+    return this.http.get<LogEntrada[]>(`${API}/logs${q}`);
+  }
+}
+
+export interface LogEntrada {
+  id: number;
+  usuario_id: number | null;
+  accion: string;
+  detalle: string;
+  ruta: string;
+  exito: number;
+  creado_en: string;
+  usuario_nombre?: string;
+  usuario_email?: string;
 }
 
 export interface Restaurante {

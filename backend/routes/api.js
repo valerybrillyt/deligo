@@ -1,11 +1,26 @@
 const express = require('express');
 const db = require('../patterns/singleton/databaseConnection');
 const authService = require('../patterns/singleton/authService');
+const logService = require('../patterns/singleton/logService');
 const { crearPedido, listarTiposDisponibles } = require('../patterns/factory/orderFactory');
 const { aplicarDecoradores, listarExtrasDisponibles } = require('../patterns/decorator/orderDecorator');
 const { construirMenuDesdeProductos } = require('../patterns/composite/menuComposite');
 
 const router = express.Router();
+
+function clientIp(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '';
+}
+
+function usuarioDesdeRequest(req) {
+  const h = req.headers['x-usuario-id'];
+  if (h) return Number(h) || null;
+  const b = req.body?.usuarioId;
+  if (b) return Number(b) || null;
+  const q = req.query?.usuarioId;
+  if (q) return Number(q) || null;
+  return null;
+}
 
 /** Documentación de patrones para la exposición / frontend */
 router.get('/patrones', (req, res) => {
@@ -18,6 +33,10 @@ router.get('/patrones', (req, res) => {
       {
         archivo: 'patterns/singleton/authService.js',
         uso: 'Un solo servicio de sesión para login (token único)',
+      },
+      {
+        archivo: 'patterns/singleton/logService.js',
+        uso: 'Un solo servicio que escribe en la tabla logs (auditoría)',
       },
     ],
     factory: {
@@ -40,10 +59,12 @@ router.get('/patrones', (req, res) => {
 router.get('/health', (req, res) => {
   try {
     const [rows] = db.getPool().query('SELECT COUNT(*) AS n FROM restaurantes');
+    const [logs] = db.getPool().query('SELECT COUNT(*) AS n FROM logs');
     res.json({
       ok: true,
       modo: 'sqlite',
       restaurantes: rows[0].n,
+      logs: logs[0].n,
       mensaje: 'Backend y SQLite conectados',
       patronesActivos: ['Singleton', 'Factory', 'Decorator', 'Composite'],
     });
@@ -52,13 +73,75 @@ router.get('/health', (req, res) => {
   }
 });
 
+/** Registrar acción desde el frontend (navegación, etc.) */
+router.post('/logs', (req, res) => {
+  try {
+    const { usuarioId, accion, detalle, ruta } = req.body;
+    logService.registrar({
+      usuarioId: usuarioId || usuarioDesdeRequest(req),
+      accion: accion || 'ACCION_FRONTEND',
+      detalle: detalle || '',
+      ruta: ruta || req.headers.referer || '',
+      ip: clientIp(req),
+      exito: 1,
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** Ver historial de acciones (DBeaver / exposición) */
+router.get('/logs', (req, res) => {
+  try {
+    const usuarioId = req.query.usuarioId;
+    let rows;
+    if (usuarioId) {
+      [rows] = db.getPool().query(
+        `SELECT l.id, l.usuario_id, l.accion, l.detalle, l.ruta, l.exito, l.creado_en,
+                u.nombre AS usuario_nombre, u.email AS usuario_email
+         FROM logs l
+         LEFT JOIN usuarios u ON u.id = l.usuario_id
+         WHERE l.usuario_id = ?
+         ORDER BY l.id DESC LIMIT 200`,
+        [Number(usuarioId)]
+      );
+    } else {
+      [rows] = db.getPool().query(
+        `SELECT l.id, l.usuario_id, l.accion, l.detalle, l.ruta, l.exito, l.creado_en,
+                u.nombre AS usuario_nombre, u.email AS usuario_email
+         FROM logs l
+         LEFT JOIN usuarios u ON u.id = l.usuario_id
+         ORDER BY l.id DESC LIMIT 200`
+      );
+    }
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/restaurantes', (req, res) => {
   try {
+    const uid = usuarioDesdeRequest(req);
+    logService.registrar({
+      usuarioId: uid,
+      accion: 'VER_RESTAURANTES',
+      ruta: '/api/restaurantes',
+      ip: clientIp(req),
+    });
     const [rows] = db.getPool().query(
       'SELECT id, nombre, direccion, latitud, longitud FROM restaurantes'
     );
     res.json(rows);
   } catch (err) {
+    logService.registrar({
+      usuarioId: usuarioDesdeRequest(req),
+      accion: 'VER_RESTAURANTES',
+      detalle: err.message,
+      exito: 0,
+      ip: clientIp(req),
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -70,8 +153,22 @@ router.post('/usuarios/registro', (req, res) => {
       'INSERT INTO usuarios (nombre, email, password, direccion, latitud, longitud) VALUES (?,?,?,?,?,?)',
       [nombre, email, password, direccion || '', latitud || 19.4326, longitud || -99.1332]
     );
+    logService.registrar({
+      usuarioId: r.insertId,
+      accion: 'REGISTRO_OK',
+      detalle: `email=${email}`,
+      ruta: '/api/usuarios/registro',
+      ip: clientIp(req),
+    });
     res.status(201).json({ id: r.insertId, mensaje: 'Usuario registrado' });
   } catch (err) {
+    logService.registrar({
+      accion: 'REGISTRO_ERROR',
+      detalle: err.message,
+      ruta: '/api/usuarios/registro',
+      ip: clientIp(req),
+      exito: 0,
+    });
     res.status(400).json({ error: err.message });
   }
 });
@@ -83,20 +180,51 @@ router.post('/usuarios/login', (req, res) => {
       'SELECT id, nombre, email FROM usuarios WHERE email=? AND password=?',
       [email, password]
     );
-    if (!rows.length) return res.status(401).json({ error: 'Credenciales incorrectas' });
+    if (!rows.length) {
+      logService.registrar({
+        accion: 'LOGIN_ERROR',
+        detalle: `email=${email}`,
+        ruta: '/api/usuarios/login',
+        ip: clientIp(req),
+        exito: 0,
+      });
+      return res.status(401).json({ error: 'Credenciales incorrectas' });
+    }
     const user = rows[0];
     const token = authService.login(user.id, user.email);
+    logService.registrar({
+      usuarioId: user.id,
+      accion: 'LOGIN_OK',
+      detalle: `email=${email}`,
+      ruta: '/api/usuarios/login',
+      ip: clientIp(req),
+    });
     res.json({ token, usuario: user });
   } catch (err) {
+    logService.registrar({
+      accion: 'LOGIN_ERROR',
+      detalle: err.message,
+      exito: 0,
+      ip: clientIp(req),
+    });
     res.status(500).json({ error: err.message });
   }
 });
 
 router.get('/restaurantes/:id/menu', (req, res) => {
   try {
+    const restId = Number(req.params.id);
+    const uid = usuarioDesdeRequest(req);
+    logService.registrar({
+      usuarioId: uid,
+      accion: 'VER_MENU',
+      detalle: `restaurante_id=${restId}`,
+      ruta: `/api/restaurantes/${restId}/menu`,
+      ip: clientIp(req),
+    });
     const [productos] = db.getPool().query(
       'SELECT id, nombre, precio, categoria, descripcion FROM productos WHERE restaurante_id=?',
-      [Number(req.params.id)]
+      [restId]
     );
     const menuArbol = construirMenuDesdeProductos(productos);
     res.json({ productos, menuArbol });
@@ -128,6 +256,14 @@ router.post('/pedidos', (req, res) => {
       [usuarioId, restauranteId, pedido.tipo, decorado.descripcion(), total, 'pendiente']
     );
 
+    logService.registrar({
+      usuarioId,
+      accion: 'CREAR_PEDIDO',
+      detalle: `pedido_id=${r.insertId} total=${total} tipo=${pedido.tipo}`,
+      ruta: '/api/pedidos',
+      ip: clientIp(req),
+    });
+
     res.status(201).json({
       pedidoId: r.insertId,
       total,
@@ -137,6 +273,13 @@ router.post('/pedidos', (req, res) => {
       tiempoEstimadoMin: pedido.tiempoEstimadoMin,
     });
   } catch (err) {
+    logService.registrar({
+      usuarioId: req.body?.usuarioId,
+      accion: 'CREAR_PEDIDO_ERROR',
+      detalle: err.message,
+      exito: 0,
+      ip: clientIp(req),
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -144,6 +287,12 @@ router.post('/pedidos', (req, res) => {
 router.get('/pedidos', (req, res) => {
   try {
     const usuarioId = req.query.usuarioId;
+    logService.registrar({
+      usuarioId: usuarioId ? Number(usuarioId) : null,
+      accion: 'VER_PEDIDOS',
+      ruta: '/api/pedidos',
+      ip: clientIp(req),
+    });
     let rows;
     if (usuarioId) {
       [rows] = db.getPool().query(
@@ -168,6 +317,14 @@ router.get('/pedidos', (req, res) => {
 router.get('/pedidos/:id/seguimiento', (req, res) => {
   try {
     const id = Number(req.params.id);
+    const uid = usuarioDesdeRequest(req);
+    logService.registrar({
+      usuarioId: uid,
+      accion: 'VER_SEGUIMIENTO',
+      detalle: `pedido_id=${id}`,
+      ruta: `/api/pedidos/${id}/seguimiento`,
+      ip: clientIp(req),
+    });
     const [rows] = db.getPool().query(
       `SELECT p.estado, p.total, p.tipo, r.nombre AS restaurante, r.latitud AS rest_lat, r.longitud AS rest_lng,
               u.direccion, u.latitud AS user_lat, u.longitud AS user_lng
@@ -213,6 +370,12 @@ router.patch('/pedidos/:id/estado', (req, res) => {
       return res.status(400).json({ error: 'Estado inválido' });
     }
     db.getPool().query('UPDATE pedidos SET estado = ? WHERE id = ?', [estado, req.params.id]);
+    logService.registrar({
+      usuarioId: usuarioDesdeRequest(req),
+      accion: 'CAMBIO_ESTADO_PEDIDO',
+      detalle: `pedido_id=${req.params.id} nuevo_estado=${estado}`,
+      ip: clientIp(req),
+    });
     res.json({ ok: true, estado });
   } catch (err) {
     res.status(500).json({ error: err.message });

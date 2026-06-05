@@ -36,8 +36,23 @@ deligo.db → Tables
 - restaurantes
 - productos
 - pedidos
+- **logs** ← auditoría de acciones del usuario
 
-Clic derecho en **restaurantes** → **View data** → 3 filas.
+Clic derecho en **logs** → **View data** → verás login, pedidos, páginas visitadas, etc.
+
+### Qué guarda la tabla `logs`
+
+| Campo | Significado |
+|-------|-------------|
+| usuario_id | Quién hizo la acción (puede ser NULL si no había sesión) |
+| accion | Ej: `LOGIN_OK`, `CREAR_PEDIDO`, `VER_MENU`, `ACCESO_DENEGADO` |
+| detalle | Info extra (id de pedido, email, error…) |
+| exito | 1 = bien, 0 = falló |
+| creado_en | Fecha y hora |
+
+Si la app se cae, la profesora puede revisar esta tabla para saber en qué paso quedó el usuario.
+
+Clic derecho en **restaurantes** → **View data** → 8 restaurantes.
 
 ## Ventajas
 
