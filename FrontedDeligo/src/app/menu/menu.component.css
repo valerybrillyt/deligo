@@ -1,0 +1,9 @@
+.categoria { margin-bottom: 1.5rem; }
+.categoria ul { list-style: none; padding: 0; }
+.categoria li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+.carrito { margin-top: 2rem; padding: 1.25rem; background: var(--deligo-card); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.total { font-weight: 700; font-size: 1.1rem; }
+.extras { display: flex; flex-direction: column; gap: 0.35rem; margin: 1rem 0; }
+.btn-confirm { background: var(--deligo-primary); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; }
+.mensaje { margin-top: 1rem; color: #15803d; }
+.link-seguimiento { display: inline-block; margin-top: 1rem; }

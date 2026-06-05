@@ -1,0 +1,14 @@
+<h1>Iniciar sesión</h1>
+<p class="intro">Accede a tu cuenta DeliGo.</p>
+
+<form class="form" (ngSubmit)="iniciarSesion()">
+  <label>Correo <input type="email" [(ngModel)]="email" name="email" required /></label>
+  <label>Contraseña <input type="password" [(ngModel)]="password" name="password" required /></label>
+  <button type="submit" class="btn-submit">Entrar</button>
+</form>
+
+@if (mensaje) {
+  <p class="mensaje" [class.error]="esError">{{ mensaje }}</p>
+}
+
+<p class="link">¿No tienes cuenta? <a routerLink="/registro">Regístrate</a></p>

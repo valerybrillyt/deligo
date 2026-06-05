@@ -1,0 +1,8 @@
+.intro { color: var(--deligo-muted); }
+.form { max-width: 420px; display: flex; flex-direction: column; gap: 1rem; }
+.form label { display: flex; flex-direction: column; gap: 0.35rem; font-weight: 600; font-size: 0.9rem; }
+.form input { padding: 0.6rem 0.75rem; border: 1px solid #ddd; border-radius: 8px; }
+.btn-submit { background: var(--deligo-primary); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; }
+.mensaje { margin-top: 1rem; color: #15803d; }
+.mensaje.error { color: #b91c1c; }
+.link { margin-top: 1.5rem; }

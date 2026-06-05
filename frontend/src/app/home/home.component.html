@@ -1,0 +1,40 @@
+<section class="hero">
+  <div class="hero-content">
+    <h1>Tu comida favorita,<br />a domicilio</h1>
+    <p>Restaurantes cerca de ti. Pide en minutos y sigue tu entrega en vivo.</p>
+    <a routerLink="/restaurantes" class="btn-hero">Pedir ahora</a>
+    @if (!auth.estaLogueado()) {
+      <p class="sub-cta">¿Nuevo? <a routerLink="/registro">Crea tu cuenta gratis</a></p>
+    }
+  </div>
+  <div class="hero-visual">
+    @for (r of destacados; track r.id; let i = $index) {
+      <a [routerLink]="['/menu', r.id]" class="float-card" [class]="'c' + ((i % 3) + 1)">
+        {{ icono(r.nombre) }} {{ r.nombre }}
+      </a>
+    }
+    @if (!destacados.length) {
+      <div class="float-card c1">🍕 Pizza Express</div>
+      <div class="float-card c2">🍣 Sushi House</div>
+      <div class="float-card c3">🍔 Burger Zone</div>
+    }
+  </div>
+</section>
+
+<section class="steps">
+  <div class="step">
+    <span class="num">1</span>
+    <h3>Elige restaurante</h3>
+    <p>Explora locales con menú completo</p>
+  </div>
+  <div class="step">
+    <span class="num">2</span>
+    <h3>Arma tu pedido</h3>
+    <p>Agrega platillos y opciones de envío</p>
+  </div>
+  <div class="step">
+    <span class="num">3</span>
+    <h3>Recíbelo en casa</h3>
+    <p>Sigue el repartidor en el mapa</p>
+  </div>
+</section>

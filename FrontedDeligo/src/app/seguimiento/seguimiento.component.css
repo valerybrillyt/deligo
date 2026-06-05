@@ -1,0 +1,9 @@
+.buscar { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.buscar label { display: flex; flex-direction: column; font-weight: 600; }
+.buscar input { padding: 0.5rem; width: 100px; }
+.buscar button { padding: 0.55rem 1rem; background: var(--deligo-dark); color: white; border: none; border-radius: 8px; }
+.info { background: var(--deligo-card); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+.mapa { min-height: 220px; background: linear-gradient(135deg, #e0f7fa, #fff3e0); border: 2px dashed var(--deligo-primary); border-radius: 12px; padding: 1.5rem; text-align: center; }
+.mapa-titulo { font-size: 1.25rem; font-weight: 700; }
+.hint { font-size: 0.85rem; color: var(--deligo-muted); }
+.error { color: #b91c1c; }

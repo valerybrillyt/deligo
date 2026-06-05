@@ -1,0 +1,30 @@
+<div class="page">
+  <h1>¿Qué se te antoja?</h1>
+  <p class="sub">Restaurantes disponibles para entrega a domicilio</p>
+
+  @if (cargando) {
+    <div class="skeleton-grid">
+      @for (i of [1,2,3,4,5,6,7,8]; track i) {
+        <div class="skeleton"></div>
+      }
+    </div>
+  } @else if (error) {
+    <div class="alert">{{ error }}</div>
+  } @else {
+    <div class="grid">
+      @for (r of restaurantes; track r.id) {
+        <a [routerLink]="['/menu', r.id]" class="card">
+          <div class="card-img">{{ icono(r.nombre) }}</div>
+          <div class="card-body">
+            <h2>{{ r.nombre }}</h2>
+            <p class="dir">{{ r.direccion }}</p>
+            <div class="meta">
+              <span class="rating">★ 4.{{ 5 + (r.id % 4) }}</span>
+              <span class="time">{{ tiempo(r.id) }}–{{ tiempo(r.id) + 10 }} min</span>
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+  }
+</div>

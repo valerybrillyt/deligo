@@ -1,0 +1,32 @@
+:root {
+  --deligo-primary: #ff6b35;
+  --deligo-dark: #1a1a2e;
+  --deligo-bg: #faf8f5;
+  --deligo-card: #ffffff;
+  --deligo-text: #2d2d2d;
+  --deligo-muted: #6b7280;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--deligo-bg);
+  color: var(--deligo-text);
+}
+
+a {
+  color: var(--deligo-primary);
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+input, select, button {
+  font-size: 1rem;
+}

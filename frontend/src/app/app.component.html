@@ -1,0 +1,32 @@
+@if (!hideLayout) {
+  <header class="header">
+    <a routerLink="/" class="logo">
+      <span class="logo-mark">D</span>
+      <span class="logo-name">Deli<span>Go</span></span>
+    </a>
+    <nav class="nav">
+      <a routerLink="/restaurantes" routerLinkActive="active">Pedir</a>
+      @if (usuarioNombre) {
+        <a routerLink="/seguimiento" routerLinkActive="active">Mis pedidos</a>
+        <div class="user-menu">
+          <span class="avatar">{{ usuarioNombre.charAt(0) }}</span>
+          <span class="user-name">{{ usuarioNombre }}</span>
+          <button type="button" class="btn-ghost" (click)="cerrarSesion()">Salir</button>
+        </div>
+      } @else {
+        <a routerLink="/login" routerLinkActive="active">Entrar</a>
+        <a routerLink="/registro" class="btn-cta">Registrarse</a>
+      }
+    </nav>
+  </header>
+}
+
+<main class="main" [class.full]="hideLayout">
+  <router-outlet />
+</main>
+
+@if (!hideLayout) {
+  <footer class="footer">
+    <p>© DeliGo — Delivery a domicilio</p>
+  </footer>
+}

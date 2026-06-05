@@ -1,0 +1,52 @@
+<h1>Patrones de diseño en DeliGo</h1>
+<p class="intro">Todos se implementan en el <strong>backend</strong> (JavaScript). El frontend los usa al llamar al API.</p>
+
+@if (error) {
+  <p class="error">{{ error }}</p>
+} @else if (doc) {
+
+  <section class="card singleton">
+    <h2>Singleton</h2>
+    <p class="donde">📁 backend/patterns/singleton/</p>
+    @for (s of doc.singleton; track s.archivo) {
+      <div class="item">
+        <code>{{ s.archivo }}</code>
+        <p>{{ s.uso }}</p>
+      </div>
+    }
+    <p class="en-web">En la web: <strong>Login</strong> usa authService (una sola sesión).</p>
+  </section>
+
+  <section class="card factory">
+    <h2>Factory</h2>
+    <p class="donde">📁 backend/patterns/factory/orderFactory.js</p>
+    <p>{{ doc.factory.uso }}</p>
+    <ul>
+      @for (t of doc.factory.tipos; track t.tipo) {
+        <li><strong>{{ t.etiqueta }}</strong> — {{ t.descripcion }} ({{ t.tiempo }} min, envío ${{ t.envio }})</li>
+      }
+    </ul>
+    <p class="en-web">En la web: pantalla <strong>Menú</strong> → elegir tipo de pedido.</p>
+  </section>
+
+  <section class="card decorator">
+    <h2>Decorator</h2>
+    <p class="donde">📁 backend/patterns/decorator/orderDecorator.js</p>
+    <p>{{ doc.decorator.uso }}</p>
+    <ul>
+      @for (e of doc.decorator.extras; track e.codigo) {
+        <li>{{ e.nombre }} (+${{ e.costo }})</li>
+      }
+    </ul>
+    <p class="en-web">En la web: <strong>Menú</strong> → checkboxes de extras al confirmar.</p>
+  </section>
+
+  <section class="card composite">
+    <h2>Composite</h2>
+    <p class="donde">📁 backend/patterns/composite/menuComposite.js</p>
+    <p>{{ doc.composite.uso }}</p>
+    <p class="en-web">En la web: <strong>Menú</strong> → categorías con productos dentro (árbol).</p>
+  </section>
+}
+
+<a routerLink="/" class="btn-back">← Volver al inicio</a>

@@ -1,0 +1,78 @@
+<div class="page">
+  <h1>Mis pedidos</h1>
+  <p class="sub">Sigue el estado de tus entregas en tiempo real</p>
+
+  @if (!auth.estaLogueado()) {
+    <div class="guest">
+      <p>Inicia sesión para ver tus pedidos</p>
+      <a routerLink="/login" class="btn">Iniciar sesión</a>
+    </div>
+  }
+
+  @if (misPedidos.length) {
+    <div class="pedidos-tabs">
+      @for (p of misPedidos; track p.id) {
+        <button
+          type="button"
+          class="tab"
+          [class.active]="p.id === pedidoId"
+          (click)="seleccionarPedido(p.id)"
+        >
+          <span class="tab-name">{{ p.restaurante }}</span>
+          <span class="tab-meta">#{{ p.id }} · {{ estadoLabel(p.estado) }}</span>
+        </button>
+      }
+    </div>
+  }
+
+  @if (seguimiento) {
+    <div class="tracking-card">
+      <div class="status-header">
+        <span class="status-badge" [class]="seguimiento.estado">{{ estadoLabel(seguimiento.estado) }}</span>
+        @if (seguimiento.progreso !== undefined) {
+          <span class="pct">{{ seguimiento.progreso }}% completado</span>
+        }
+      </div>
+
+      <div class="timeline">
+        @for (paso of seguimiento.pasos; track paso.nombre) {
+          <div class="tl-step" [class.done]="paso.completado" [class.active]="paso.activo">
+            <div class="tl-dot"></div>
+            <span>{{ estadoLabel(paso.nombre) }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="mapa">
+        <div class="mapa-punto origen">
+          <span class="emoji">🍽️</span>
+          <div>
+            <small>Recogido en</small>
+            <strong>{{ seguimiento.origen.nombre }}</strong>
+          </div>
+        </div>
+        <div class="mapa-linea">
+          <div class="repartidor">🛵</div>
+        </div>
+        <div class="mapa-punto destino">
+          <span class="emoji">🏠</span>
+          <div>
+            <small>Entregar en</small>
+            <strong>{{ seguimiento.destino.direccion || 'Tu dirección' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      @if (seguimiento.estado !== 'entregado') {
+        <p class="refresh-hint">El estado se actualiza automáticamente cada 8 segundos</p>
+      }
+    </div>
+  } @else if (error && auth.estaLogueado()) {
+    <p class="error">{{ error }}</p>
+  } @else if (auth.estaLogueado() && !misPedidos.length) {
+    <div class="empty">
+      <p>Aún no tienes pedidos</p>
+      <a routerLink="/restaurantes" class="btn">Hacer mi primer pedido</a>
+    </div>
+  }
+</div>

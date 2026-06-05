@@ -1,0 +1,19 @@
+{
+  "name": "deligo-backend",
+  "version": "1.0.0",
+  "description": "Backend DeliGo - SQLite (sin instalar MySQL)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "reiniciar": "node -e \"require('child_process').execSync('lsof -ti :3000 | xargs kill -9 2>/dev/null',{stdio:'inherit'})\" 2>/dev/null; node server.js",
+    "reset-db": "node scripts/reset-db.js",
+    "seed": "node scripts/reset-db.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}

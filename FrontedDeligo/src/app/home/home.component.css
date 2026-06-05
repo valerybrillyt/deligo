@@ -1,0 +1,70 @@
+.hero {
+  text-align: center;
+  padding: 2rem 1rem 3rem;
+}
+
+.badge {
+  display: inline-block;
+  background: #fff0eb;
+  color: var(--deligo-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.hero h1 span {
+  color: var(--deligo-primary);
+}
+
+.subtitle {
+  color: var(--deligo-muted);
+  max-width: 480px;
+  margin: 0 auto 2rem;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--deligo-primary);
+  color: white;
+}
+
+.btn-outline {
+  border: 2px solid var(--deligo-dark);
+  color: var(--deligo-dark);
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.features article {
+  background: var(--deligo-card);
+  padding: 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.features h3 {
+  margin-top: 0;
+}

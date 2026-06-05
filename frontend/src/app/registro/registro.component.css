@@ -1,0 +1,10 @@
+.auth-card { max-width: 420px; margin: 0 auto; background: var(--deligo-card); padding: 2rem; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.auth-card h1 { margin-top: 0; }
+.patron-hint { font-size: 0.85rem; color: var(--deligo-muted); margin-bottom: 1.25rem; }
+form { display: flex; flex-direction: column; gap: 1rem; }
+form label { display: flex; flex-direction: column; gap: 0.35rem; font-weight: 600; font-size: 0.9rem; }
+form input { padding: 0.65rem 0.75rem; border: 1px solid #ddd; border-radius: 8px; }
+.btn-submit { background: var(--deligo-primary); color: white; border: none; padding: 0.8rem; border-radius: 8px; font-weight: 700; margin-top: 0.5rem; }
+.mensaje { margin-top: 1rem; color: #15803d; }
+.mensaje.error { color: #b91c1c; }
+.link { margin-top: 1.5rem; text-align: center; }

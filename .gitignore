@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Angular build
+frontend/dist/
+FrontedDeligo/dist/
+**/.angular/cache/
+
+# Variables secretas
+.env
+**/.env
+
+# Base SQLite (se regenera al iniciar el backend)
+database/deligo.db
+
+# Sistema / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Logs
+*.log
+npm-debug.log*

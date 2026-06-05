@@ -1,0 +1,17 @@
+.intro { color: var(--deligo-muted); margin-bottom: 1.5rem; }
+.card {
+  background: var(--deligo-card);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--deligo-primary);
+}
+.singleton { border-left-color: #6366f1; }
+.factory { border-left-color: #22c55e; }
+.decorator { border-left-color: #eab308; }
+.composite { border-left-color: #3b82f6; }
+.donde { font-size: 0.85rem; color: var(--deligo-muted); }
+.en-web { background: #fff8f5; padding: 0.5rem 0.75rem; border-radius: 8px; margin-top: 0.75rem; font-size: 0.9rem; }
+code { background: #f1f5f9; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.8rem; }
+.error { color: #b91c1c; }
+.btn-back { display: inline-block; margin-top: 1rem; font-weight: 600; }

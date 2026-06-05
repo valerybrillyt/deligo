@@ -1,0 +1,53 @@
+<h1>Menú DeliGo</h1>
+<p class="intro">Selecciona productos y confirma tu pedido.</p>
+
+@for (cat of menuArbol; track cat.nombre) {
+  @if (cat.tipo === 'categoria' && cat.items) {
+    <section class="categoria">
+      <h2>{{ cat.nombre }}</h2>
+      <ul>
+        @for (item of cat.items; track item.id) {
+          @if (item.tipo === 'producto') {
+            <li>
+              <span>{{ item.nombre }} — ${{ item.precio }}</span>
+              <button type="button" (click)="agregar(item)">Agregar</button>
+            </li>
+          }
+        }
+      </ul>
+    </section>
+  }
+}
+
+@if (carrito.length) {
+  <aside class="carrito">
+    <h3>Tu pedido</h3>
+    @for (c of carrito; track c.id) {
+      <p>{{ c.nombre }} x{{ c.cantidad }} — ${{ c.precio * c.cantidad }}</p>
+    }
+    <p class="total">Subtotal: ${{ subtotal }}</p>
+
+    <label>
+      Tipo de pedido
+      <select [(ngModel)]="tipoPedido">
+        <option value="estandar">Estándar</option>
+        <option value="express">Express</option>
+        <option value="programado">Programado</option>
+      </select>
+    </label>
+
+    <div class="extras">
+      <label><input type="checkbox" [(ngModel)]="extraPropina" /> Propina</label>
+      <label><input type="checkbox" [(ngModel)]="extraSeguro" /> Seguro</label>
+      <label><input type="checkbox" [(ngModel)]="extraEco" /> Empaque eco</label>
+    </div>
+
+    <button type="button" class="btn-confirm" (click)="confirmarPedido()">Confirmar pedido</button>
+  </aside>
+}
+
+@if (mensaje) {
+  <p class="mensaje">{{ mensaje }}</p>
+}
+
+<a routerLink="/seguimiento" class="link-seguimiento">Ir a seguimiento del pedido →</a>

@@ -1,0 +1,21 @@
+<header class="header">
+  <a routerLink="/" class="logo">
+    <span class="logo-icon">🛵</span>
+    <span class="logo-text">Deli<strong>Go</strong></span>
+  </a>
+  <nav class="nav">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+    <a routerLink="/restaurantes" routerLinkActive="active">Restaurantes</a>
+    <a routerLink="/seguimiento" routerLinkActive="active">Seguimiento</a>
+    <a routerLink="/login" routerLinkActive="active">Iniciar sesión</a>
+    <a routerLink="/registro" class="btn-nav">Registrarse</a>
+  </nav>
+</header>
+
+<main class="main">
+  <router-outlet />
+</main>
+
+<footer class="footer">
+  <p>DeliGo — Sistema de delivery y envíos online</p>
+</footer>

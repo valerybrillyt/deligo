@@ -1,0 +1,17 @@
+FRONTEND DELIGO — Componentes creados
+
+Abre ESTA carpeta "frontend" en Visual Studio Code:
+  File → Open Folder → frontend
+
+Componentes en src/app/:
+  home/         → home.component.ts, .html, .spec.ts, .css
+  restaurantes/ → restaurantes.component.*
+  registro/     → registro.component.*
+  login/        → login.component.*
+  menu/         → menu.component.*
+  seguimiento/  → seguimiento.component.*
+  services/     → api.service.ts
+
+Para ejecutar:
+  npm install
+  npm start

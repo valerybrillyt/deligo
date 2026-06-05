@@ -1,0 +1,59 @@
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 3rem;
+  align-items: center;
+  padding: 4rem 2rem 5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+@media (max-width: 900px) { .hero { grid-template-columns: 1fr; padding: 2.5rem 1.5rem; } }
+.hero-content h1 {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin: 0 0 1.25rem;
+}
+.hero-content p { color: var(--muted); font-size: 1.15rem; margin-bottom: 2rem; max-width: 440px; }
+.btn-hero {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--primary), #ff2d55);
+  color: white; padding: 1.1rem 2.25rem; border-radius: 14px;
+  font-weight: 700; font-size: 1.05rem;
+  box-shadow: 0 12px 32px var(--primary-glow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-hero:hover { transform: translateY(-2px); box-shadow: 0 16px 40px var(--primary-glow); }
+.sub-cta { margin-top: 1.25rem; font-size: 0.95rem; color: var(--muted); }
+.sub-cta a { color: var(--primary); font-weight: 700; }
+.hero-visual {
+  position: relative; min-height: 360px;
+  background: linear-gradient(145deg, #fff5f0, #ffe8e0);
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+}
+.float-card {
+  position: absolute; background: var(--card); padding: 1rem 1.35rem;
+  border-radius: 14px; box-shadow: var(--shadow); font-weight: 700; font-size: 0.95rem;
+}
+.c1 { top: 12%; left: 8%; }
+.c2 { top: 42%; right: 5%; }
+.c3 { bottom: 12%; left: 22%; }
+.steps {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+  padding: 0 2rem 5rem; max-width: 1100px; margin: 0 auto;
+}
+@media (max-width: 700px) { .steps { grid-template-columns: 1fr; } }
+.step {
+  background: var(--card); padding: 2rem 1.5rem; border-radius: var(--radius);
+  text-align: center; box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+}
+.step .num {
+  display: inline-flex; width: 48px; height: 48px;
+  background: linear-gradient(135deg, #fff0eb, #ffe0d4);
+  color: var(--primary); border-radius: 14px;
+  align-items: center; justify-content: center; font-weight: 800; margin-bottom: 1rem;
+}
+.step h3 { margin: 0 0 0.4rem; font-weight: 700; }
+.step p { margin: 0; color: var(--muted); font-size: 0.9rem; }

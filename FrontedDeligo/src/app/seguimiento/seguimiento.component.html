@@ -1,0 +1,25 @@
+<h1>Seguimiento DeliGo</h1>
+<p class="intro">Rastrea tu pedido en el mapa (origen → destino).</p>
+
+<div class="buscar">
+  <label>ID del pedido</label>
+  <input type="number" [(ngModel)]="pedidoId" min="1" />
+  <button type="button" (click)="cargarSeguimiento()">Actualizar</button>
+</div>
+
+@if (seguimiento) {
+  <div class="info">
+    <p><strong>Estado:</strong> {{ seguimiento.estado }}</p>
+    <p><strong>Desde:</strong> {{ seguimiento.origen.nombre }}</p>
+    <p><strong>Hasta:</strong> {{ seguimiento.destino.direccion }}</p>
+  </div>
+
+  <div class="mapa">
+    <p class="mapa-titulo">🗺️ Mapa DeliGo</p>
+    <p>Origen: {{ seguimiento.origen.lat }}, {{ seguimiento.origen.lng }}</p>
+    <p>Destino: {{ seguimiento.destino.lat }}, {{ seguimiento.destino.lng }}</p>
+    <p class="hint">Aquí integrarás Google Maps API para la ruta en vivo.</p>
+  </div>
+} @else if (error) {
+  <p class="error">{{ error }}</p>
+}
