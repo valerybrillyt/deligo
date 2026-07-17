@@ -13,6 +13,7 @@ import { ApiService } from './services/api.service';
 })
 export class AppComponent implements OnInit {
   usuarioNombre = '';
+  usuarioRol = '';
   hideLayout = false;
 
   constructor(
@@ -22,8 +23,12 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.auth.nombreChanges.subscribe((n) => (this.usuarioNombre = n));
+    this.auth.nombreChanges.subscribe((n) => {
+      this.usuarioNombre = n;
+      this.usuarioRol = this.auth.getRol();
+    });
     this.usuarioNombre = this.auth.getNombre();
+    this.usuarioRol = this.auth.getRol();
 
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))

@@ -1,16 +1,32 @@
 # Componentes DeliGo — frontend
 
-Todos creados en `src/app/`:
+Todos en `src/app/`:
 
-| Carpeta | Archivos |
-|---------|----------|
-| `home/` | home.component.ts, .html, .spec.ts, .css |
-| `restaurantes/` | restaurantes.component.ts, .html, .spec.ts, .css |
-| `registro/` | registro.component.ts, .html, .spec.ts, .css |
-| `login/` | login.component.ts, .html, .spec.ts, .css |
-| `menu/` | menu.component.ts, .html, .spec.ts, .css |
-| `seguimiento/` | seguimiento.component.ts, .html, .spec.ts, .css |
-| `services/` | api.service.ts |
+| Carpeta | Pantalla | Quién la usa |
+|---------|----------|--------------|
+| `home/` | `/` | Todos |
+| `login/` | `/login` | Invitados |
+| `registro/` | `/registro` | Invitados |
+| `restaurantes/` | `/restaurantes` | **cliente**, admin |
+| `menu/` | `/menu/:id` | **cliente**, admin |
+| `seguimiento/` | `/seguimiento` | **cliente**, admin |
+| `admin-logs/` | `/admin/logs` | **admin** (ver logs) |
+| `repartidor/` | `/repartidor` | **repartidor** |
+| `restaurante-panel/` | `/restaurante` | **restaurante** |
+| `roles-guia/` | `/roles` | Todos (explicación de roles) |
+| `patrones/` | `/patrones` | Todos (patrones de diseño) |
+| `services/` | — | api.service, auth.service |
+
+## Cuentas demo por rol
+
+| Rol | Correo | Clave |
+|-----|--------|-------|
+| Cliente | demo@deligo.com | demo123 |
+| Admin | admin@deligo.com | admin123 |
+| Repartidor | repartidor@deligo.com | repart123 |
+| Restaurante | pizza@deligo.com | rest123 |
+
+Guía completa: **http://localhost:4200/roles**
 
 ## Ejecutar
 
@@ -19,6 +35,4 @@ cd frontend
 npm start
 ```
 
-Abrir siempre: **http://localhost:4200** (puerto fijo)
-
-Si VS Code muestra otro puerto (61736, etc.), ignóralo y usa 4200 directo en el navegador.
+Abrir: **http://localhost:4200**

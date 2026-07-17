@@ -37,7 +37,12 @@
   font-weight: 700; font-size: 0.9rem;
 }
 .user-name { font-size: 0.9rem; font-weight: 600; }
+.user-rol { font-size: 0.7rem; text-transform: uppercase; color: var(--deligo-muted); background: #f1f5f9; padding: 0.15rem 0.45rem; border-radius: 6px; }
 .btn-ghost { background: none; color: var(--muted); font-size: 0.85rem; font-weight: 500; }
 .btn-ghost:hover { color: var(--primary); }
 .main { min-height: calc(100vh - 120px); padding: 0; max-width: 1100px; margin: 0 auto; }
-.footer { text-align: center; padding: 1.5rem; color: var(--muted); font-size: 0.8rem; }
+.footer {
+  text-align: center; padding: 1.5rem; color: var(--muted); font-size: 0.8rem;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem;
+}
+.footer a { font-weight: 600; color: var(--primary); }

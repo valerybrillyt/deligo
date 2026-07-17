@@ -68,6 +68,9 @@
   font-size: 2rem; margin: 0 auto 1.5rem; font-weight: 700;
 }
 .exito h1 { margin: 0 0 0.5rem; }
+.pago-nota, .pago-demo { font-size: 0.75rem; color: var(--muted); margin: 0 0 0.5rem; }
+.pago-info { margin: 0.5rem 0 0; color: var(--text); }
+.pago-demo { color: var(--primary); font-weight: 600; }
 .pedido-num { color: var(--muted); }
 .total-pagado { font-size: 1.25rem; margin: 1rem 0; }
 .eta { background: #f0fdf4; color: var(--success); padding: 0.5rem 1rem; border-radius: 8px; display: inline-block; }
@@ -75,3 +78,4 @@
 .btn-primary { background: var(--primary); color: white; padding: 0.85rem; border-radius: 10px; font-weight: 700; }
 .btn-secondary { color: var(--muted); padding: 0.5rem; }
 .error { color: #b91c1c; }
+.loading { color: var(--muted); font-weight: 600; padding: 2rem 0; }

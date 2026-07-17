@@ -3,7 +3,11 @@
     <div class="exito-icon">✓</div>
     <h1>¡Pedido confirmado!</h1>
     <p class="pedido-num">Pedido #{{ pedidoExitoso.pedidoId }}</p>
-    <p class="total-pagado">Total pagado: <strong>${{ pedidoExitoso.total.toFixed(2) }}</strong></p>
+    <p class="total-pagado">Total: <strong>{{ pedidoExitoso.total | soles }}</strong></p>
+    @if (pedidoExitoso.metodoPagoLabel) {
+      <p class="pago-info">Pago: <strong>{{ pedidoExitoso.metodoPagoLabel }}</strong></p>
+      <p class="pago-demo">Simulación académica — no se cobró dinero real</p>
+    }
     @if (pedidoExitoso.tiempoEstimadoMin) {
       <p class="eta">Llegada estimada: {{ pedidoExitoso.tiempoEstimadoMin }} minutos</p>
     }
@@ -21,8 +25,12 @@
       </div>
       <h1>{{ restauranteNombre }}</h1>
 
-      @if (error) {
+      @if (cargandoMenu) {
+        <p class="loading">Cargando menú...</p>
+      } @else if (error) {
         <p class="error">{{ error }}</p>
+      } @else if (!menuArbol.length) {
+        <p class="error">No hay productos en este restaurante.</p>
       }
 
       @for (cat of menuArbol; track cat.nombre) {
@@ -35,7 +43,7 @@
                   <article class="producto">
                     <div>
                       <h3>{{ item.nombre }}</h3>
-                      <p class="precio">${{ item.precio.toFixed(2) }}</p>
+                      <p class="precio">{{ item.precio | soles }}</p>
                     </div>
                     <button type="button" class="btn-add" (click)="agregar(item)">Agregar</button>
                   </article>
@@ -57,7 +65,7 @@
             <div class="item">
               <div class="item-info">
                 <span class="item-name">{{ c.nombre }}</span>
-                <span class="item-price">${{ (c.precio * c.cantidad).toFixed(2) }}</span>
+                <span class="item-price">{{ c.precio * c.cantidad | soles }}</span>
               </div>
               <div class="qty">
                 <button type="button" (click)="menos(c.id)">−</button>
@@ -75,7 +83,7 @@
               <label class="entrega-opt" [class.on]="tipoPedido === t.tipo">
                 <input type="radio" name="tipo" [value]="t.tipo" [(ngModel)]="tipoPedido" />
                 <span class="opt-title">{{ t.etiqueta }}</span>
-                <span class="opt-sub">{{ t.tiempo }} min · ${{ t.envio }}</span>
+                <span class="opt-sub">{{ t.tiempo }} min · {{ t.envio | soles }}</span>
               </label>
             }
           </div>
@@ -85,22 +93,33 @@
             <label class="extra-row">
               <input type="checkbox" [checked]="tieneExtra(e.codigo)" (change)="toggleExtra(e.codigo)" />
               <span>{{ e.nombre }}</span>
-              <span class="extra-precio">+${{ e.costo }}</span>
+              <span class="extra-precio">+{{ e.costo | soles }}</span>
+            </label>
+          }
+        </div>
+
+        <label class="label">Método de pago</label>
+        <p class="pago-nota">Demo del proyecto — sin tarjeta ni Yape real</p>
+        <div class="entrega-options">
+          @for (m of metodosPago; track m.codigo) {
+            <label class="entrega-opt" [class.on]="metodoPago === m.codigo">
+              <input type="radio" name="pago" [value]="m.codigo" [(ngModel)]="metodoPago" />
+              <span class="opt-title">{{ m.etiqueta }}</span>
             </label>
           }
         </div>
 
         <div class="resumen">
-          <div class="row"><span>Subtotal</span><span>${{ subtotal.toFixed(2) }}</span></div>
-          <div class="row"><span>Envío</span><span>${{ costoEnvio.toFixed(2) }}</span></div>
+          <div class="row"><span>Subtotal</span><span>{{ subtotal | soles }}</span></div>
+          <div class="row"><span>Envío</span><span>{{ costoEnvio | soles }}</span></div>
           @if (costoExtras > 0) {
-            <div class="row"><span>Complementos</span><span>${{ costoExtras.toFixed(2) }}</span></div>
+            <div class="row"><span>Complementos</span><span>{{ costoExtras | soles }}</span></div>
           }
-          <div class="row total"><span>Total</span><span>${{ totalEstimado.toFixed(2) }}</span></div>
+          <div class="row total"><span>Total</span><span>{{ totalEstimado | soles }}</span></div>
         </div>
 
         <button type="button" class="btn-pagar" [disabled]="enviando" (click)="confirmarPedido()">
-          {{ enviando ? 'Procesando...' : 'Pagar ' + totalEstimado.toFixed(2) }}
+          @if (enviando) { Procesando... } @else { Confirmar pedido · {{ totalEstimado | soles }} }
         </button>
       }
     </aside>

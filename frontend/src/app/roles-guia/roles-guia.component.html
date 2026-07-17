@@ -1,0 +1,106 @@
+<div class="page">
+  <header class="hero">
+    <p class="eyebrow">Control de acceso · RBAC</p>
+    <h1>Guía de roles en DeliGo</h1>
+    <p class="intro">
+      Cada usuario tiene un <strong>rol</strong> en la base de datos (<code>usuarios.rol</code>).
+      Eso define qué pantallas ve y qué acciones puede hacer.
+    </p>
+    @if (auth.estaLogueado()) {
+      <p class="sesion-actual">
+        Sesión actual: <strong>{{ auth.getNombre() }}</strong> — rol
+        <span class="badge">{{ auth.getRol() }}</span>
+      </p>
+    }
+  </header>
+
+  @if (cargando) {
+    <p>Cargando roles...</p>
+  } @else if (error) {
+    <p class="error">{{ error }}</p>
+  } @else {
+    <div class="grid">
+      @for (r of roles; track r.codigo) {
+        <article class="card" [class]="claseRol(r.codigo)" [class.actual]="esRolActual(r.codigo)">
+          @if (esRolActual(r.codigo)) {
+            <span class="tag-actual">Tu rol ahora</span>
+          }
+
+          <div class="card-head">
+            <span class="emoji">{{ r.emoji }}</span>
+            <div>
+              <h2>{{ r.nombre }}</h2>
+              <p class="codigo"><code>{{ r.codigo }}</code></p>
+            </div>
+          </div>
+
+          <p class="resumen">{{ r.resumen }}</p>
+
+          <section>
+            <h3>Cuenta de prueba</h3>
+            <p><span>Correo:</span> {{ r.cuentaDemo.email }}</p>
+            <p><span>Clave:</span> {{ r.cuentaDemo.password }}</p>
+            @if (r.cuentaDemo.local) {
+              <p><span>Local:</span> {{ r.cuentaDemo.local }}</p>
+            }
+          </section>
+
+          <section>
+            <h3>Al iniciar sesión va a</h3>
+            <p><code>{{ r.alLoginVaA }}</code></p>
+          </section>
+
+          <section>
+            <h3>Pantallas que usa</h3>
+            <ul>
+              @for (p of r.pantallas; track p) {
+                <li><code>{{ p }}</code></li>
+              }
+            </ul>
+          </section>
+
+          <section class="si">
+            <h3>✅ Sí puede</h3>
+            <ul>
+              @for (item of r.puede; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </section>
+
+          <section class="no">
+            <h3>❌ No puede</h3>
+            <ul>
+              @for (item of r.noPuede; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </section>
+
+          <section class="bd">
+            <h3>En la base de datos</h3>
+            <p>{{ r.enBD }}</p>
+          </section>
+
+          <a routerLink="/login" class="btn-probar">Probar con esta cuenta →</a>
+        </article>
+      }
+    </div>
+
+    <section class="flujo">
+      <h2>Flujo de un pedido (los 3 roles trabajando)</h2>
+      <ol>
+        <li><strong>Cliente</strong> confirma el pedido → estado <code>pendiente</code></li>
+        <li><strong>Restaurante</strong> cocina → marca <code>preparando</code></li>
+        <li><strong>Repartidor</strong> recoge → marca <code>en_camino</code> → luego <code>entregado</code></li>
+        <li><strong>Admin</strong> puede ver cada paso en <code>/admin/logs</code> y en DBeaver</li>
+      </ol>
+    </section>
+  }
+
+  <div class="footer-links">
+    <a routerLink="/login">Iniciar sesión</a>
+    <a routerLink="/patrones">Ver patrones de diseño</a>
+    <a routerLink="/">← Inicio</a>
+  </div>
+</div>

@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
-const { aplicarSeed } = require('../../seed/seedData');
+const { aplicarSeed, asegurarLogsDemo } = require('../../seed/seedData');
 
 class DatabaseConnection {
   constructor() {
@@ -22,6 +22,7 @@ class DatabaseConnection {
     this.db.pragma('foreign_keys = ON');
     this._crearTablas();
     aplicarSeed(this.db);
+    asegurarLogsDemo(this.db);
     return this.db;
   }
 
@@ -52,7 +53,10 @@ class DatabaseConnection {
         direccion TEXT DEFAULT '',
         latitud REAL DEFAULT 0,
         longitud REAL DEFAULT 0,
-        creado_en TEXT DEFAULT CURRENT_TIMESTAMP
+        rol TEXT DEFAULT 'cliente',
+        restaurante_id INTEGER,
+        creado_en TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (restaurante_id) REFERENCES restaurantes(id)
       );
 
       CREATE TABLE IF NOT EXISTS restaurantes (
@@ -98,6 +102,23 @@ class DatabaseConnection {
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
       );
     `);
+    this._migrar();
+  }
+
+  _migrar() {
+    const pedidos = this.db.prepare('PRAGMA table_info(pedidos)').all();
+    if (!pedidos.some((c) => c.name === 'metodo_pago')) {
+      this.db.exec("ALTER TABLE pedidos ADD COLUMN metodo_pago TEXT DEFAULT 'efectivo'");
+    }
+
+    const usuarios = this.db.prepare('PRAGMA table_info(usuarios)').all();
+    if (!usuarios.some((c) => c.name === 'rol')) {
+      this.db.exec("ALTER TABLE usuarios ADD COLUMN rol TEXT DEFAULT 'cliente'");
+    }
+    if (!usuarios.some((c) => c.name === 'restaurante_id')) {
+      this.db.exec('ALTER TABLE usuarios ADD COLUMN restaurante_id INTEGER');
+    }
+    this.db.exec("UPDATE usuarios SET rol = 'cliente' WHERE rol IS NULL OR rol = ''");
   }
 
 }

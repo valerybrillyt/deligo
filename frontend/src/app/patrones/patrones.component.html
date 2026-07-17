@@ -23,7 +23,7 @@
     <p>{{ doc.factory.uso }}</p>
     <ul>
       @for (t of doc.factory.tipos; track t.tipo) {
-        <li><strong>{{ t.etiqueta }}</strong> — {{ t.descripcion }} ({{ t.tiempo }} min, envío ${{ t.envio }})</li>
+        <li><strong>{{ t.etiqueta }}</strong> — {{ t.descripcion }} ({{ t.tiempo }} min, envío {{ t.envio | soles }})</li>
       }
     </ul>
     <p class="en-web">En la web: pantalla <strong>Menú</strong> → elegir tipo de pedido.</p>
@@ -35,7 +35,7 @@
     <p>{{ doc.decorator.uso }}</p>
     <ul>
       @for (e of doc.decorator.extras; track e.codigo) {
-        <li>{{ e.nombre }} (+${{ e.costo }})</li>
+        <li>{{ e.nombre }} (+{{ e.costo | soles }})</li>
       }
     </ul>
     <p class="en-web">En la web: <strong>Menú</strong> → checkboxes de extras al confirmar.</p>

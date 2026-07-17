@@ -11,6 +11,10 @@ export class ApiService {
     return this.http.get<PatronesDoc>(`${API}/patrones`);
   }
 
+  getRoles() {
+    return this.http.get<{ roles: RolDetalle[] }>(`${API}/roles`);
+  }
+
   getRestaurantes() {
     return this.http.get<Restaurante[]>(`${API}/restaurantes`);
   }
@@ -52,6 +56,16 @@ export class ApiService {
     return this.http.patch(`${API}/pedidos/${pedidoId}/estado`, { estado });
   }
 
+  cancelarPedido(pedidoId: number) {
+    return this.http.post<{ ok: boolean; mensaje: string }>(`${API}/pedidos/${pedidoId}/cancelar`, {});
+  }
+
+  getMetodosPago() {
+    return this.http.get<{ metodos: Array<{ codigo: string; etiqueta: string }>; simulado: boolean; mensaje: string }>(
+      `${API}/pedidos/metodos-pago`
+    );
+  }
+
   registrarLog(accion: string, detalle = '', ruta = '') {
     const usuarioId = Number(localStorage.getItem('usuarioId')) || null;
     return this.http.post(`${API}/logs`, { usuarioId, accion, detalle, ruta });
@@ -73,6 +87,7 @@ export interface LogEntrada {
   creado_en: string;
   usuario_nombre?: string;
   usuario_email?: string;
+  usuario_rol?: string;
 }
 
 export interface Restaurante {
@@ -91,6 +106,7 @@ export interface MenuCategoria {
 
 export interface MenuResponse {
   menuArbol: MenuCategoria[];
+  productos?: Array<{ id: number; nombre: string; precio: number; categoria?: string; descripcion?: string }>;
   patronUsado?: string;
   totalCategorias?: number;
 }
@@ -117,6 +133,9 @@ export interface RespuestaPedido {
   costoEnvio?: number;
   costoExtras?: number;
   tiempoEstimadoMin?: number;
+  metodoPago?: string;
+  metodoPagoLabel?: string;
+  pagoSimulado?: boolean;
   patrones?: {
     factory: { tipo: string; etiqueta: string; tiempoEstimadoMin: number; costoEnvio: number };
     decorator: { descripcion: string; extras: Array<{ nombre: string; costo: number }>; costoExtras: number };
@@ -132,6 +151,13 @@ export interface SeguimientoPedido {
   pasos?: Array<{ nombre: string; completado: boolean; activo: boolean }>;
   origen: { lat: number; lng: number; nombre: string };
   destino: { lat: number; lng: number; direccion: string };
+  metodoPago?: string;
+  metodoPagoLabel?: string;
+  mapa?: {
+    proveedor: string;
+    coordenadas: Array<[number, number]>;
+    repartidor: { lat: number; lng: number };
+  };
 }
 
 export interface PedidoResumen {
@@ -140,12 +166,36 @@ export interface PedidoResumen {
   estado: string;
   tipo: string;
   restaurante: string;
+  metodo_pago?: string;
+  cliente_nombre?: string;
+  cliente_direccion?: string;
+  usuario_id?: number;
+  restaurante_id?: number;
 }
 
 export interface LoginResponse {
   token: string;
-  usuario: { id: number; nombre: string; email: string };
+  usuario: {
+    id: number;
+    nombre: string;
+    email: string;
+    rol: 'cliente' | 'admin' | 'repartidor' | 'restaurante';
+    restaurante_id?: number | null;
+  };
   patronUsado?: string;
+}
+
+export interface RolDetalle {
+  codigo: string;
+  nombre: string;
+  emoji: string;
+  resumen: string;
+  cuentaDemo: { email: string; password: string; local?: string };
+  pantallas: string[];
+  alLoginVaA: string;
+  puede: string[];
+  noPuede: string[];
+  enBD: string;
 }
 
 export interface PatronesDoc {

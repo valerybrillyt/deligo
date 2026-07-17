@@ -1,0 +1,41 @@
+<div class="page">
+  <p class="eyebrow">Panel repartidor</p>
+  <h1>Entregas activas</h1>
+  <p class="sub">Puedes marcar pedidos como <strong>en camino</strong> o <strong>entregado</strong>.</p>
+
+  @if (cargando) {
+    <p>Cargando...</p>
+  } @else if (error) {
+    <p class="error">{{ error }}</p>
+  } @else if (!pedidos.length) {
+    <p>No hay entregas pendientes por ahora.</p>
+  } @else {
+    <div class="lista">
+      @for (p of pedidos; track p.id) {
+        <article class="card">
+          <div class="top">
+            <strong>#{{ p.id }} · {{ p.restaurante }}</strong>
+            <span class="estado">{{ estadoLabel(p.estado) }}</span>
+          </div>
+          <p>Cliente: {{ p.cliente_nombre || '—' }}</p>
+          <p class="dir">{{ p.cliente_direccion || 'Sin dirección' }}</p>
+          <p class="total">Total: S/ {{ p.total.toFixed(2) }}</p>
+          <div class="actions">
+            @if (p.estado === 'preparando') {
+              <button type="button" [disabled]="actualizando === p.id" (click)="marcarEstado(p.id, 'en_camino')">
+                Salir a entregar
+              </button>
+            }
+            @if (p.estado === 'en_camino') {
+              <button type="button" class="ok" [disabled]="actualizando === p.id" (click)="marcarEstado(p.id, 'entregado')">
+                Marcar entregado
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <a routerLink="/" class="back">← Volver</a>
+</div>

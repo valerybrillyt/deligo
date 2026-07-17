@@ -9,7 +9,10 @@ CREATE TABLE IF NOT EXISTS usuarios (
   direccion VARCHAR(255) DEFAULT '',
   latitud DECIMAL(10, 7) DEFAULT 0,
   longitud DECIMAL(10, 7) DEFAULT 0,
-  creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  rol ENUM('cliente','admin','repartidor','restaurante') DEFAULT 'cliente',
+  restaurante_id INT NULL,
+  creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (restaurante_id) REFERENCES restaurantes(id)
 );
 
 CREATE TABLE IF NOT EXISTS restaurantes (

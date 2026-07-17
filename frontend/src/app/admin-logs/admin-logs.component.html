@@ -1,0 +1,49 @@
+<div class="page">
+  <div class="head">
+    <div>
+      <p class="eyebrow">Panel administrador</p>
+      <h1>Auditoría de logs</h1>
+      <p class="sub">Solo el rol <strong>admin</strong> puede ver esta tabla (requisito del curso).</p>
+    </div>
+    <span class="badge-rol">{{ auth.getRol() }}</span>
+  </div>
+
+  @if (cargando) {
+    <p>Cargando logs...</p>
+  } @else if (error) {
+    <p class="error">{{ error }}</p>
+  } @else if (!logs.length) {
+    <p>No hay registros aún. Usa la app y vuelve aquí.</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Acción</th>
+            <th>Detalle</th>
+            <th>Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of logs; track l.id) {
+            <tr [class.fail]="!l.exito">
+              <td>{{ l.id }}</td>
+              <td>{{ l.creado_en }}</td>
+              <td>{{ l.usuario_nombre || '—' }}</td>
+              <td>{{ l.usuario_rol || '—' }}</td>
+              <td><code>{{ l.accion }}</code></td>
+              <td class="detalle">{{ l.detalle || '—' }}</td>
+              <td>{{ exitoLabel(l.exito) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <a routerLink="/" class="back">← Volver al inicio</a>
+</div>

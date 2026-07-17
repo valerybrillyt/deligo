@@ -61,10 +61,15 @@
   <main class="auth-panel">
     <div class="auth-form-wrap">
       <div class="demo-box">
-        <strong>Cuenta de prueba</strong>
-        <p><span>Correo:</span> demo&#64;deligo.com</p>
-        <p><span>Clave:</span> demo123</p>
-        <button type="button" class="demo-fill" (click)="usarDemo()">Usar estos datos</button>
+        <strong>Cuentas de prueba</strong>
+        <p><span>Cliente:</span> demo&#64;deligo.com / demo123</p>
+        <p><span>Admin:</span> admin&#64;deligo.com / admin123</p>
+        <p><span>Repartidor:</span> repartidor&#64;deligo.com / repart123</p>
+        <p><span>Restaurante:</span> pizza&#64;deligo.com / rest123</p>
+        <div class="demo-btns">
+          <button type="button" class="demo-fill" (click)="usarDemo()">Cliente</button>
+          <button type="button" class="demo-fill secondary" (click)="usarAdmin()">Admin</button>
+        </div>
       </div>
 
       <div class="form-header">

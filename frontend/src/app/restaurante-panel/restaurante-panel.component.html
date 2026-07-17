@@ -1,0 +1,33 @@
+<div class="page">
+  <p class="eyebrow">Panel restaurante</p>
+  <h1>Pedidos de tu local</h1>
+  <p class="sub">Marca como <strong>en preparación</strong> cuando empieces a cocinar.</p>
+
+  @if (cargando) {
+    <p>Cargando...</p>
+  } @else if (error) {
+    <p class="error">{{ error }}</p>
+  } @else if (!pedidos.length) {
+    <p>No hay pedidos para tu restaurante.</p>
+  } @else {
+    <div class="lista">
+      @for (p of pedidos; track p.id) {
+        <article class="card">
+          <div class="top">
+            <strong>#{{ p.id }}</strong>
+            <span class="estado">{{ p.estado }}</span>
+          </div>
+          <p>Cliente: {{ p.cliente_nombre || '—' }}</p>
+          <p class="total">Total: S/ {{ p.total.toFixed(2) }} · {{ p.tipo }}</p>
+          @if (p.estado === 'pendiente') {
+            <button type="button" [disabled]="actualizando === p.id" (click)="preparar(p.id)">
+              Empezar preparación
+            </button>
+          }
+        </article>
+      }
+    </div>
+  }
+
+  <a routerLink="/" class="back">← Volver</a>
+</div>

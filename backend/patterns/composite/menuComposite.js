@@ -18,14 +18,14 @@ class CategoriaComposite {
 }
 
 function construirMenuDesdeProductos(productos) {
-  const raiz = new CategoriaComposite('Menú DeliGo');
   const cats = {};
   for (const p of productos) {
     const c = p.categoria || 'General';
-    if (!cats[c]) { cats[c] = new CategoriaComposite(c); raiz.agregar(cats[c]); }
+    if (!cats[c]) cats[c] = new CategoriaComposite(c);
     cats[c].agregar(new ProductoHoja(p));
   }
-  return raiz.mostrar();
+  // Devuelve categorías al primer nivel para que el frontend las muestre
+  return Object.values(cats).flatMap((cat) => cat.mostrar());
 }
 
 module.exports = { construirMenuDesdeProductos };

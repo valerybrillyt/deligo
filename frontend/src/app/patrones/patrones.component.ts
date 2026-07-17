@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService, PatronesDoc } from '../services/api.service';
+import { SolesPipe } from '../pipes/soles.pipe';
 
 @Component({
   selector: 'app-patrones',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, SolesPipe],
   templateUrl: './patrones.component.html',
   styleUrl: './patrones.component.css',
 })

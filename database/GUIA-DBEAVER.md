@@ -40,6 +40,44 @@ deligo.db → Tables
 
 Clic derecho en **logs** → **View data** → verás login, pedidos, páginas visitadas, etc.
 
+**Consulta SQL correcta:**
+
+```sql
+SELECT * FROM logs ORDER BY id DESC;
+```
+
+(No escribas solo `SELECT FROM logs` — falta el `*`.)
+
+### Si la tabla `logs` sale vacía
+
+1. **Ruta correcta:** debe ser exactamente  
+   `.../PROYECTO DE DISEÑO/database/deligo.db`  
+   (no `schema.sql`, no otra carpeta del proyecto).
+
+2. **Refrescar DBeaver:** clic derecho en la conexión → **Refresh** (o F5).
+
+3. **Arrancar el backend** (crea la tabla y datos de ejemplo si está vacía):
+   ```bash
+   cd backend && npm start
+   ```
+
+4. **Usar la app** un poco (login, ver restaurantes, pedir) — cada acción guarda un log.
+
+5. **Ver por API:** abre http://localhost:3000/api/logs
+
+6. Si sigue vacío: `cd backend && npm run reset-db && npm start`
+
+### Roles de usuario (`usuarios.rol`)
+
+| Rol | Permisos principales |
+|-----|----------------------|
+| `cliente` | Pedir comida, ver sus pedidos |
+| `admin` | Ver **todos** los logs y pedidos |
+| `repartidor` | Ver entregas activas, marcar en camino / entregado |
+| `restaurante` | Ver pedidos de su local, marcar en preparación |
+
+Cuentas demo: `admin@deligo.com` / `admin123` · `repartidor@deligo.com` / `repart123` · `pizza@deligo.com` / `rest123`
+
 ### Qué guarda la tabla `logs`
 
 | Campo | Significado |

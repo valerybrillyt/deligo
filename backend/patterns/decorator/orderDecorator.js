@@ -20,10 +20,10 @@ class PedidoBase {
 class DecoradorPropina extends PedidoBase {
   constructor(p) {
     super(p);
-    this.monto = 2;
+    this.monto = 3;
   }
   descripcion() {
-    return `${super.descripcion()} + Propina ($${this.monto})`;
+    return `${super.descripcion()} + Propina (S/ ${this.monto})`;
   }
   costoExtra() {
     return super.costoExtra() + this.monto;
@@ -38,10 +38,10 @@ class DecoradorSeguro extends PedidoBase {
     return `${super.descripcion()} + Seguro de envío`;
   }
   costoExtra() {
-    return super.costoExtra() + 1.5;
+    return super.costoExtra() + 2;
   }
   extrasLista() {
-    return [...super.extrasLista(), { codigo: 'seguro', nombre: 'Seguro', costo: 1.5 }];
+    return [...super.extrasLista(), { codigo: 'seguro', nombre: 'Seguro', costo: 2 }];
   }
 }
 
@@ -50,10 +50,10 @@ class DecoradorEco extends PedidoBase {
     return `${super.descripcion()} + Empaque ecológico`;
   }
   costoExtra() {
-    return super.costoExtra() + 0.75;
+    return super.costoExtra() + 1;
   }
   extrasLista() {
-    return [...super.extrasLista(), { codigo: 'eco', nombre: 'Empaque eco', costo: 0.75 }];
+    return [...super.extrasLista(), { codigo: 'eco', nombre: 'Empaque eco', costo: 1 }];
   }
 }
 
@@ -74,9 +74,9 @@ function aplicarDecoradores(pedido, extras = []) {
 
 function listarExtrasDisponibles() {
   return [
-    { codigo: 'propina', nombre: 'Propina para el repartidor', costo: 2 },
-    { codigo: 'seguro', nombre: 'Protección del pedido', costo: 1.5 },
-    { codigo: 'eco', nombre: 'Empaque sustentable', costo: 0.75 },
+    { codigo: 'propina', nombre: 'Propina para el repartidor', costo: 3 },
+    { codigo: 'seguro', nombre: 'Protección del pedido', costo: 2 },
+    { codigo: 'eco', nombre: 'Empaque sustentable', costo: 1 },
   ];
 }
 

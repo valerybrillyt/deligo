@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Patrones de diseño en DeliGo — Documento detallado</title>
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.55; margin: 2.2cm; color: #1a1a1a; }
+  h1 { font-size: 22pt; color: #ff4d00; border-bottom: 3px solid #ff4d00; padding-bottom: 10px; margin-bottom: 6px; }
+  h2 { font-size: 15pt; color: #18181b; margin-top: 28px; border-left: 5px solid #ff4d00; padding-left: 10px; }
+  h3 { font-size: 12pt; color: #333; margin-top: 18px; }
+  h4 { font-size: 11pt; color: #555; margin-top: 14px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 10pt; }
+  th, td { border: 1px solid #bbb; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #fff7ed; }
+  .meta { background: #f4f4f5; padding: 14px 16px; border-radius: 8px; margin-bottom: 20px; }
+  code { background: #f0f0f0; padding: 2px 6px; font-family: Consolas, monospace; font-size: 9.5pt; }
+  pre { background: #f8f8f9; border: 1px solid #ddd; padding: 12px; font-size: 9.5pt; overflow-x: auto; }
+  ul, ol { margin: 8px 0 8px 20px; }
+  li { margin-bottom: 4px; }
+  .nota { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 10px 14px; margin: 14px 0; font-size: 10pt; }
+  .pagina { color: #ff4d00; font-weight: bold; }
+  .archivo { color: #0f766e; font-weight: bold; }
+  .footer { margin-top: 40px; font-size: 9pt; color: #666; border-top: 1px solid #ccc; padding-top: 12px; }
+</style>
+</head>
+<body>
+
+<h1>Patrones de diseño en DeliGo</h1>
+<p><strong>Documento detallado — uso real en el proyecto hasta la fecha</strong></p>
+
+<div class="meta">
+  <strong>Proyecto:</strong> DeliGo — Sistema de delivery online (Caso de estudio 4)<br>
+  <strong>Equipo / repositorio:</strong> <a href="https://github.com/valerybrillyt/deligo">github.com/valerybrillyt/deligo</a><br>
+  <strong>Frontend:</strong> Angular (carpeta <code>frontend/</code>)<br>
+  <strong>Backend:</strong> Node.js + Express (carpeta <code>backend/</code>)<br>
+  <strong>Base de datos:</strong> SQLite — archivo <code>database/deligo.db</code> (visible en DBeaver)<br>
+  <strong>Patrones implementados:</strong> Singleton (×3), Factory, Decorator, Composite
+</div>
+
+<h2>1. Regla fundamental del proyecto</h2>
+<p>Los <strong>cuatro patrones de diseño solicitados en clase</strong> están implementados en el <strong>backend</strong>, dentro de la carpeta <code>backend/patterns/</code>. El frontend <strong>no contiene la lógica de los patrones</strong>: solo consume el API REST y muestra al usuario el resultado (menú por categorías, tipos de entrega, extras, totales, etc.).</p>
+<p>La base de datos guarda datos (usuarios, restaurantes, productos, pedidos, logs). Los patrones son <strong>código JavaScript</strong> que organiza el comportamiento del servidor.</p>
+
+<div class="nota">
+  <strong>Importante para la exposición:</strong> Si la profesora pregunta «¿dónde está el Factory?», la respuesta es: en <code>backend/patterns/factory/orderFactory.js</code>, y se ejecuta cuando el usuario confirma un pedido en la pantalla Menú (ruta <code>POST /api/pedidos</code>).
+</div>
+
+<h2>2. Mapa general — patrón → archivo → pantalla</h2>
+<table>
+  <tr>
+    <th>Patrón</th>
+    <th>Archivo(s)</th>
+    <th>Ruta API principal</th>
+    <th>Pantalla web donde el usuario lo «dispara»</th>
+  </tr>
+  <tr>
+    <td><strong>Singleton</strong> (BD)</td>
+    <td><code>patterns/singleton/databaseConnection.js</code></td>
+    <td>Todas las rutas <code>/api/*</code></td>
+    <td>Toda la app (datos en segundo plano)</td>
+  </tr>
+  <tr>
+    <td><strong>Singleton</strong> (auth)</td>
+    <td><code>patterns/singleton/authService.js</code></td>
+    <td><code>POST /api/usuarios/login</code></td>
+    <td><span class="pagina">Login</span> — <code>/login</code></td>
+  </tr>
+  <tr>
+    <td><strong>Singleton</strong> (logs)</td>
+    <td><code>patterns/singleton/logService.js</code></td>
+    <td><code>POST /api/logs</code>, todas las acciones registradas</td>
+    <td>Toda la app; visible en DBeaver tabla <code>logs</code></td>
+  </tr>
+  <tr>
+    <td><strong>Factory</strong></td>
+    <td><code>patterns/factory/orderFactory.js</code></td>
+    <td><code>POST /api/pedidos</code>, <code>GET /api/pedidos/tipos</code></td>
+    <td><span class="pagina">Menú</span> — elegir tipo de entrega</td>
+  </tr>
+  <tr>
+    <td><strong>Decorator</strong></td>
+    <td><code>patterns/decorator/orderDecorator.js</code></td>
+    <td><code>POST /api/pedidos</code>, <code>GET /api/pedidos/extras</code></td>
+    <td><span class="pagina">Menú</span> — checkboxes de complementos</td>
+  </tr>
+  <tr>
+    <td><strong>Composite</strong></td>
+    <td><code>patterns/composite/menuComposite.js</code></td>
+    <td><code>GET /api/restaurantes/:id/menu</code></td>
+    <td><span class="pagina">Menú</span> — categorías y productos</td>
+  </tr>
+</table>
+
+<h2>3. Singleton — «una sola instancia para todo el servidor»</h2>
+<p>El patrón <strong>Singleton</strong> garantiza que una clase tenga <strong>una única instancia</strong> compartida en toda la aplicación. En DeliGo se usa <strong>tres veces</strong>, cada una con un propósito distinto.</p>
+
+<h3>3.1 Singleton de base de datos</h3>
+<p><span class="archivo">Archivo:</span> <code>backend/patterns/singleton/databaseConnection.js</code></p>
+<p><strong>Problema que resuelve:</strong> Si cada petición HTTP abriera su propia conexión a SQLite, el servidor sería lento y podría corromper el archivo <code>deligo.db</code>.</p>
+<p><strong>Cómo funciona:</strong></p>
+<ul>
+  <li>La clase <code>DatabaseConnection</code> guarda <code>DatabaseConnection.instance</code>.</li>
+  <li>En el constructor, si ya existe instancia, devuelve la misma.</li>
+  <li><code>connect()</code> abre <code>database/deligo.db</code>, crea tablas si no existen y carga datos de demo.</li>
+  <li><code>getPool().query(sql, params)</code> es el método que usan todas las rutas del API.</li>
+</ul>
+<p><strong>Dónde se usa en el código:</strong></p>
+<ul>
+  <li><code>backend/server.js</code> — al arrancar el servidor.</li>
+  <li><code>backend/routes/api.js</code> — en cada consulta (restaurantes, login, menú, pedidos, logs).</li>
+  <li><code>backend/patterns/singleton/logService.js</code> — para escribir en la tabla <code>logs</code>.</li>
+</ul>
+<p><strong>Tablas que gestiona:</strong> <code>usuarios</code>, <code>restaurantes</code>, <code>productos</code>, <code>pedidos</code>, <code>logs</code>, <code>meta</code>.</p>
+
+<h3>3.2 Singleton de autenticación</h3>
+<p><span class="archivo">Archivo:</span> <code>backend/patterns/singleton/authService.js</code></p>
+<p><strong>Problema que resuelve:</strong> Centralizar las sesiones de usuarios en un solo lugar del servidor.</p>
+<p><strong>Clase:</strong> <code>AuthService</code> con un <code>Map</code> de tokens en memoria.</p>
+<p><strong>Métodos principales:</strong></p>
+<ul>
+  <li><code>login(userId, email)</code> → genera token <code>deligo_{userId}_{timestamp}</code> y lo guarda.</li>
+  <li><code>validateToken(token)</code> → recupera la sesión.</li>
+</ul>
+<p><strong>Flujo en la aplicación:</strong></p>
+<ol>
+  <li>Usuario entra a <span class="pagina">Login</span> (<code>/login</code>).</li>
+  <li>Frontend llama <code>POST /api/usuarios/login</code> con email y contraseña.</li>
+  <li>El API valida en SQLite (Singleton BD) y llama <code>authService.login()</code> (Singleton auth).</li>
+  <li>El token vuelve al frontend; se guarda en <code>localStorage</code>.</li>
+  <li>El usuario puede acceder a <span class="pagina">Restaurantes</span>, <span class="pagina">Menú</span> y <span class="pagina">Seguimiento</span> (rutas protegidas con <code>authGuard</code> en Angular).</li>
+</ol>
+
+<h3>3.3 Singleton de logs (auditoría)</h3>
+<p><span class="archivo">Archivo:</span> <code>backend/patterns/singleton/logService.js</code></p>
+<p><strong>Problema que resuelve:</strong> Registrar de forma uniforme todo lo que hace el usuario, por si la app falla o hay que reconstruir el flujo (requisito académico de tabla de logs).</p>
+<p><strong>Método principal:</strong> <code>registrar({ usuarioId, accion, detalle, ruta, ip, exito })</code></p>
+<p><strong>Tabla en BD:</strong> <code>logs</code> — campos: id, usuario_id, accion, detalle, ruta, ip, exito, creado_en.</p>
+<p><strong>Acciones que se registran automáticamente:</strong></p>
+<table>
+  <tr><th>Acción</th><th>Cuándo ocurre</th></tr>
+  <tr><td><code>LOGIN_OK</code> / <code>LOGIN_ERROR</code></td><td>Al iniciar sesión</td></tr>
+  <tr><td><code>REGISTRO_OK</code> / <code>REGISTRO_ERROR</code></td><td>Al crear cuenta</td></tr>
+  <tr><td><code>VER_RESTAURANTES</code></td><td>Al listar restaurantes</td></tr>
+  <tr><td><code>VER_MENU</code></td><td>Al abrir menú de un restaurante</td></tr>
+  <tr><td><code>CREAR_PEDIDO</code></td><td>Al confirmar pedido (aquí intervienen Factory + Decorator)</td></tr>
+  <tr><td><code>VER_SEGUIMIENTO</code></td><td>Al ver estado del pedido</td></tr>
+  <tr><td><code>ACCESO_PAGINA</code> / <code>ACCESO_DENEGADO</code></td><td>Al navegar sin o con sesión</td></tr>
+  <tr><td><code>SESION_CERRADA</code></td><td>Al cerrar sesión</td></tr>
+</table>
+<p><strong>Cómo verlo:</strong> DBeaver → tabla <code>logs</code>, o <code>GET http://localhost:3000/api/logs</code>.</p>
+
+<h2>4. Factory (Fábrica) — crear el tipo correcto de pedido</h2>
+<p><span class="archivo">Archivo:</span> <code>backend/patterns/factory/orderFactory.js</code></p>
+<p><strong>Intención del patrón:</strong> Encapsular la creación de objetos. El código que procesa el pedido no necesita saber si es estándar, express o programado; solo llama a la fábrica.</p>
+
+<h3>4.1 Clases producto</h3>
+<table>
+  <tr><th>Tipo (parámetro)</th><th>Clase</th><th>Etiqueta</th><th>Tiempo</th><th>Envío</th></tr>
+  <tr><td><code>estandar</code></td><td><code>PedidoEstandar</code></td><td>Entrega normal</td><td>45 min</td><td>$3.50</td></tr>
+  <tr><td><code>express</code></td><td><code>PedidoExpress</code></td><td>Entrega rápida</td><td>20 min</td><td>$6.00</td></tr>
+  <tr><td><code>programado</code></td><td><code>PedidoProgramado</code></td><td>Programar entrega</td><td>60 min</td><td>$2.00</td></tr>
+</table>
+
+<h3>4.2 Funciones exportadas</h3>
+<ul>
+  <li><code>crearPedido(tipo, datos)</code> — <code>switch</code> que instancia la clase correcta.</li>
+  <li><code>listarTiposDisponibles()</code> — devuelve opciones para el frontend.</li>
+</ul>
+
+<h3>4.3 Uso en frontend y API</h3>
+<ol>
+  <li>Usuario logueado abre <span class="pagina">Menú</span> de un restaurante (ej. Pizza Express).</li>
+  <li>En el panel «Tu pedido», elige radio buttons de <strong>tipo de entrega</strong>.</li>
+  <li>Al cargar la página, <code>MenuComponent</code> llama <code>GET /api/pedidos/tipos</code> → Factory lista los tipos.</li>
+  <li>Al pulsar «Pagar», <code>POST /api/pedidos</code> envía <code>tipoPedido: 'express'</code> (por ejemplo).</li>
+  <li>En <code>api.js</code>: <code>const pedido = crearPedido(tipoPedido, {...})</code>.</li>
+  <li>El pedido calcula <code>costoEnvio</code> y <code>tiempoEstimadoMin</code> según su clase.</li>
+</ol>
+<p><strong>Archivo frontend relacionado:</strong> <code>frontend/src/app/menu/menu.component.ts</code> — propiedad <code>tipoPedido</code>, método <code>confirmarPedido()</code>.</p>
+
+<h2>5. Decorator (Decorador) — extras sin modificar el pedido base</h2>
+<p><span class="archivo">Archivo:</span> <code>backend/patterns/decorator/orderDecorator.js</code></p>
+<p><strong>Intención del patrón:</strong> Añadir responsabilidades a un objeto <strong>dinámicamente</strong>, envolviéndolo, sin alterar las clases de la Factory.</p>
+
+<h3>5.1 Estructura de clases</h3>
+<ul>
+  <li><code>PedidoBase</code> — envoltorio inicial del pedido de la Factory.</li>
+  <li><code>DecoradorPropina</code> — añade $2.00.</li>
+  <li><code>DecoradorSeguro</code> — añade $1.50.</li>
+  <li><code>DecoradorEco</code> — añade $0.75 (empaque ecológico).</li>
+</ul>
+<p>Cada decorador extiende <code>PedidoBase</code> y delega al objeto envuelto (<code>super.descripcion()</code>, <code>super.costoExtra()</code>).</p>
+
+<h3>5.2 Función principal</h3>
+<pre>aplicarDecoradores(pedido, extras = [])
+// extras ejemplo: ['propina', 'seguro']</pre>
+<p>Recorre el array y va encadenando: Base → Propina → Seguro → …</p>
+
+<h3>5.3 Uso en frontend y API</h3>
+<ol>
+  <li>En <span class="pagina">Menú</span>, sección «Complementos» con checkboxes.</li>
+  <li><code>GET /api/pedidos/extras</code> lista opciones disponibles.</li>
+  <li>Al confirmar, el frontend envía <code>extras: ['propina', 'eco']</code>.</li>
+  <li>En <code>api.js</code>: <code>const decorado = aplicarDecoradores(pedido, extras)</code>.</li>
+  <li>Total final = subtotal + envío (Factory) + <code>decorado.costoExtra()</code>.</li>
+  <li>En BD se guarda <code>descripcion_extra</code> con texto del decorador (ej. «Pedido express + Propina + Empaque eco»).</li>
+</ol>
+<p><strong>Archivo frontend:</strong> <code>menu.component.ts</code> — <code>extrasSeleccionados</code>, <code>toggleExtra()</code>, <code>costoExtras</code>.</p>
+
+<h2>6. Composite (Compuesto) — menú en árbol categoría → productos</h2>
+<p><span class="archivo">Archivo:</span> <code>backend/patterns/composite/menuComposite.js</code></p>
+<p><strong>Intención del patrón:</strong> Tratar objetos individuales y grupos de forma uniforme. El menú es un árbol: las categorías contienen productos.</p>
+
+<h3>6.1 Componentes del árbol</h3>
+<table>
+  <tr><th>Rol en Composite</th><th>Clase</th><th>Qué representa</th></tr>
+  <tr><td>Composite (nodo)</td><td><code>CategoriaComposite</code></td><td>Pizzas, Bebidas, Rolls, Tacos…</td></tr>
+  <tr><td>Leaf (hoja)</td><td><code>ProductoHoja</code></td><td>Cada platillo con id, nombre, precio</td></tr>
+</table>
+
+<h3>6.2 Función principal</h3>
+<pre>construirMenuDesdeProductos(productos)
+// Lee filas de SQLite (tabla productos)
+// Agrupa por campo "categoria"
+// Devuelve array de categorías con items[]</pre>
+
+<h3>6.3 Ejemplo real — Pizza Express</h3>
+<pre>Pizzas
+  ├── Pizza Margarita      $129
+  ├── Pizza Pepperoni      $159
+  └── Pizza Cuatro Quesos  $169
+Entradas
+  ├── Garlic Bread         $59
+  └── Nachos con queso     $75
+Bebidas
+  ├── Refresco 600ml       $35
+  └── Agua mineral         $25</pre>
+
+<h3>6.4 Uso en frontend y API</h3>
+<ol>
+  <li>Usuario entra a <span class="pagina">Menú</span> /menu/1 (Pizza Express).</li>
+  <li><code>GET /api/restaurantes/1/menu</code> devuelve <code>{ productos: [...], menuArbol: [...] }</code>.</li>
+  <li><code>MenuComponent</code> recibe <code>menuArbol</code> y en el HTML hace <code>@for (cat of menuArbol)</code> → muestra cada categoría y sus productos.</li>
+  <li>Botón «Agregar» mete el producto en el carrito.</li>
+</ol>
+<p><strong>Archivos frontend:</strong> <code>menu.component.html</code>, <code>menu.component.ts</code>, <code>api.service.ts</code> método <code>getMenu()</code>.</p>
+
+<h2>7. Flujo completo — un pedido de principio a fin (todos los patrones)</h2>
+<pre>
+PASO 1 — Usuario inicia sesión
+  Pantalla: Login
+  Patrón: Singleton (databaseConnection + authService + logService)
+  API: POST /api/usuarios/login
+
+PASO 2 — Ve restaurantes
+  Pantalla: Restaurantes (requiere sesión)
+  Patrón: Singleton BD + logService
+  API: GET /api/restaurantes
+
+PASO 3 — Abre menú de Pizza Express
+  Pantalla: Menú /menu/1
+  Patrón: Composite (arma categorías) + Singleton BD + logService
+  API: GET /api/restaurantes/1/menu
+
+PASO 4 — Agrega pizzas al carrito, elige Express + Propina
+  Pantalla: Menú (panel lateral)
+  Patrón: (aún no; solo UI)
+
+PASO 5 — Confirma pedido
+  Patrón: Factory crea PedidoExpress
+          Decorator añade Propina
+          Singleton BD guarda en tabla pedidos
+          logService registra CREAR_PEDIDO
+  API: POST /api/pedidos
+
+PASO 6 — Sigue entrega
+  Pantalla: Seguimiento
+  Patrón: Singleton BD + logService
+  API: GET /api/pedidos/:id/seguimiento
+</pre>
+
+<h2>8. Rutas API — referencia rápida</h2>
+<table>
+  <tr><th>Método y ruta</th><th>Patrón(es) involucrado(s)</th><th>Descripción</th></tr>
+  <tr><td><code>GET /api/patrones</code></td><td>Documentación</td><td>JSON explicativo para exposición y pantalla /patrones</td></tr>
+  <tr><td><code>GET /api/health</code></td><td>Singleton BD</td><td>Estado del servidor y conteos</td></tr>
+  <tr><td><code>POST /api/usuarios/registro</code></td><td>Singleton BD, logService</td><td>Alta de usuario</td></tr>
+  <tr><td><code>POST /api/usuarios/login</code></td><td>Singleton BD, authService, logService</td><td>Inicio de sesión</td></tr>
+  <tr><td><code>GET /api/restaurantes</code></td><td>Singleton BD, logService</td><td>Lista de 8 restaurantes</td></tr>
+  <tr><td><code>GET /api/restaurantes/:id/menu</code></td><td>Composite, Singleton BD, logService</td><td>Menú con árbol de categorías</td></tr>
+  <tr><td><code>GET /api/pedidos/tipos</code></td><td>Factory</td><td>Tipos de entrega disponibles</td></tr>
+  <tr><td><code>GET /api/pedidos/extras</code></td><td>Decorator</td><td>Complementos disponibles</td></tr>
+  <tr><td><code>POST /api/pedidos</code></td><td>Factory + Decorator + Singleton BD + logService</td><td>Crear pedido (núcleo del caso de uso)</td></tr>
+  <tr><td><code>GET /api/pedidos</code></td><td>Singleton BD, logService</td><td>Historial de pedidos</td></tr>
+  <tr><td><code>GET /api/pedidos/:id/seguimiento</code></td><td>Singleton BD, logService</td><td>Estado y progreso</td></tr>
+  <tr><td><code>GET /api/logs</code></td><td>Singleton BD, logService</td><td>Auditoría de acciones</td></tr>
+</table>
+
+<h2>9. Pantallas Angular y su relación con los patrones</h2>
+<table>
+  <tr><th>Ruta</th><th>Componente</th><th>¿Usa patrones directamente?</th><th>¿Qué dispara en el backend?</th></tr>
+  <tr><td><code>/</code></td><td>HomeComponent</td><td>No</td><td>Solo API si hay sesión</td></tr>
+  <tr><td><code>/login</code></td><td>LoginComponent</td><td>No</td><td>authService (Singleton)</td></tr>
+  <tr><td><code>/registro</code></td><td>RegistroComponent</td><td>No</td><td>Singleton BD + logs</td></tr>
+  <tr><td><code>/restaurantes</code></td><td>RestaurantesComponent</td><td>No</td><td>Singleton BD + logs</td></tr>
+  <tr><td><code>/menu/:id</code></td><td>MenuComponent</td><td>No</td><td>Composite + Factory + Decorator al pagar</td></tr>
+  <tr><td><code>/seguimiento</code></td><td>SeguimientoComponent</td><td>No</td><td>Singleton BD + logs</td></tr>
+  <tr><td><code>/patrones</code></td><td>PatronesComponent</td><td>No</td><td>Lee GET /api/patrones (documentación)</td></tr>
+</table>
+
+<h2>10. Qué NO es patrón de diseño (pero complementa el proyecto)</h2>
+<ul>
+  <li><strong>authGuard / guestGuard</strong> (Angular) — protegen rutas; no son GoF, pero obligan login antes de pedir.</li>
+  <li><strong>authInterceptor</strong> — envía <code>X-Usuario-Id</code> al API para que los logs identifiquen al usuario.</li>
+  <li><strong>Tabla logs</strong> — persistencia; el patrón es <code>logService</code> (Singleton), no la tabla en sí.</li>
+</ul>
+
+<h2>11. Cómo demostrar los patrones en la presentación</h2>
+<ol>
+  <li><strong>En vivo:</strong> Abrir <code>http://localhost:4200/patrones</code> — pantalla académica que lee el API.</li>
+  <li><strong>En código:</strong> Mostrar carpeta <code>backend/patterns/</code> en VS Code.</li>
+  <li><strong>En DBeaver:</strong> Tabla <code>pedidos</code> (Factory+Decorator en columnas tipo y descripcion_extra) y tabla <code>logs</code>.</li>
+  <li><strong>En Postman o navegador:</strong> <code>GET localhost:3000/api/patrones</code> y <code>GET localhost:3000/api/pedidos/tipos</code>.</li>
+  <li><strong>Demo guiada:</strong> Login → Pizza Express → agregar pizza → Express + Propina → Pagar → Seguimiento.</li>
+</ol>
+
+<h2>12. Frases listas para decir en oral</h2>
+<ul>
+  <li><strong>Singleton:</strong> «Tenemos una sola conexión a SQLite, un solo servicio de sesiones y un solo servicio de logs para todo el servidor Node.»</li>
+  <li><strong>Factory:</strong> «Cuando el cliente elige entrega express o programada, la fábrica instancia la clase de pedido correcta con su precio y tiempo.»</li>
+  <li><strong>Decorator:</strong> «Los extras como propina o seguro envuelven el pedido sin modificar las clases de la fábrica.»</li>
+  <li><strong>Composite:</strong> «El menú se modela como árbol: categorías que contienen productos, y el API devuelve ese árbol al frontend.»</li>
+</ul>
+
+<h2>13. Estructura de carpetas relevante</h2>
+<pre>
+PROYECTO DE DISEÑO/
+├── backend/
+│   ├── patterns/
+│   │   ├── singleton/
+│   │   │   ├── databaseConnection.js   ← Singleton BD
+│   │   │   ├── authService.js            ← Singleton sesión
+│   │   │   └── logService.js             ← Singleton auditoría
+│   │   ├── factory/
+│   │   │   └── orderFactory.js           ← Factory
+│   │   ├── decorator/
+│   │   │   └── orderDecorator.js         ← Decorator
+│   │   └── composite/
+│   │       └── menuComposite.js          ← Composite
+│   ├── routes/
+│   │   └── api.js                        ← Une todo el API
+│   └── server.js
+├── frontend/
+│   └── src/app/
+│       ├── menu/                         ← Pantalla que más usa patrones
+│       ├── login/
+│       └── patrones/                     ← Documentación visual
+└── database/
+    ├── deligo.db
+    └── schema.sql
+</pre>
+
+<div class="footer">
+  Documento detallado DeliGo — Patrones de diseño · Actualizado con logs, auth guards y catálogo ampliado · GitHub: valerybrillyt/deligo
+</div>
+
+</body>
+</html>

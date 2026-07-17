@@ -1,0 +1,59 @@
+.page { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 2rem; }
+.hero { margin-bottom: 2rem; }
+.eyebrow { color: var(--deligo-primary); font-weight: 600; font-size: 0.85rem; margin: 0; }
+.intro { color: var(--deligo-muted); max-width: 640px; }
+.sesion-actual { background: #fff8f5; padding: 0.65rem 1rem; border-radius: 10px; display: inline-block; }
+.badge { background: #6366f1; color: #fff; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.8rem; text-transform: uppercase; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
+.card {
+  background: var(--deligo-card);
+  border-radius: 14px;
+  padding: 1.25rem;
+  border-top: 4px solid #ccc;
+  position: relative;
+}
+.card-cliente { border-top-color: #22c55e; }
+.card-admin { border-top-color: #6366f1; }
+.card-repartidor { border-top-color: #f59e0b; }
+.card-restaurante { border-top-color: #3b82f6; }
+.card.actual { box-shadow: 0 0 0 2px var(--deligo-primary); }
+.tag-actual {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--deligo-primary);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+.card-head { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; }
+.emoji { font-size: 2rem; }
+.card h2 { margin: 0; font-size: 1.2rem; }
+.codigo { margin: 0; font-size: 0.8rem; color: var(--deligo-muted); }
+.resumen { color: var(--deligo-muted); font-size: 0.95rem; margin-bottom: 1rem; }
+section { margin-bottom: 0.85rem; }
+section h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--deligo-muted); margin: 0 0 0.35rem; }
+section p, section li { font-size: 0.88rem; margin: 0.2rem 0; }
+ul { margin: 0; padding-left: 1.1rem; }
+.si h3 { color: #15803d; }
+.no h3 { color: #b91c1c; }
+.bd { background: #f8fafc; padding: 0.5rem 0.65rem; border-radius: 8px; }
+code { background: #f1f5f9; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.8rem; }
+.btn-probar {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--deligo-primary);
+}
+.flujo {
+  margin-top: 2rem;
+  background: var(--deligo-card);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+.flujo ol { padding-left: 1.25rem; }
+.flujo li { margin-bottom: 0.5rem; }
+.footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-top: 2rem; font-weight: 600; }
+.error { color: #b91c1c; }

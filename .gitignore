@@ -26,3 +26,9 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Librerías Python auxiliares (no son parte del proyecto)
+.pylibs/
+
+# Archivos personales / tareas
+*.xlsx

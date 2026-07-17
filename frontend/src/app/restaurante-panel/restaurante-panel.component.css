@@ -1,0 +1,12 @@
+.page { max-width: 720px; margin: 0 auto; padding: 1rem; }
+.eyebrow { color: var(--deligo-primary); font-weight: 600; font-size: 0.85rem; }
+.sub { color: var(--deligo-muted); }
+.lista { display: grid; gap: 1rem; margin-top: 1rem; }
+.card { background: var(--deligo-card); border-radius: 12px; padding: 1rem; }
+.top { display: flex; justify-content: space-between; }
+.estado { background: #eff6ff; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.8rem; text-transform: capitalize; }
+.total { font-weight: 600; }
+button { margin-top: 0.75rem; border: none; background: var(--deligo-primary); color: #fff; padding: 0.5rem 0.85rem; border-radius: 8px; cursor: pointer; }
+button:disabled { opacity: 0.6; }
+.error { color: #b91c1c; }
+.back { display: inline-block; margin-top: 1.25rem; font-weight: 600; }

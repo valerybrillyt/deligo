@@ -30,8 +30,6 @@ export class RegistroComponent {
         email: this.email,
         password: this.password,
         direccion: this.direccion,
-        latitud: 19.4326,
-        longitud: -99.1332,
       })
       .subscribe({
         next: () => {

@@ -6,13 +6,23 @@
     </a>
     <nav class="nav">
       @if (usuarioNombre) {
-        <a routerLink="/restaurantes" routerLinkActive="active">Pedir</a>
-      }
-      @if (usuarioNombre) {
-        <a routerLink="/seguimiento" routerLinkActive="active">Mis pedidos</a>
+        @if (usuarioRol === 'cliente' || usuarioRol === 'admin') {
+          <a routerLink="/restaurantes" routerLinkActive="active">Pedir</a>
+          <a routerLink="/seguimiento" routerLinkActive="active">Mis pedidos</a>
+        }
+        @if (usuarioRol === 'admin') {
+          <a routerLink="/admin/logs" routerLinkActive="active">Logs</a>
+        }
+        @if (usuarioRol === 'repartidor') {
+          <a routerLink="/repartidor" routerLinkActive="active">Entregas</a>
+        }
+        @if (usuarioRol === 'restaurante') {
+          <a routerLink="/restaurante" routerLinkActive="active">Mi local</a>
+        }
         <div class="user-menu">
           <span class="avatar">{{ usuarioNombre.charAt(0) }}</span>
           <span class="user-name">{{ usuarioNombre }}</span>
+          <span class="user-rol">{{ usuarioRol }}</span>
           <button type="button" class="btn-ghost" (click)="cerrarSesion()">Salir</button>
         </div>
       } @else {
@@ -30,5 +40,7 @@
 @if (!hideLayout) {
   <footer class="footer">
     <p>© DeliGo — Delivery a domicilio</p>
+    <a routerLink="/roles">Guía de roles</a>
+    <a routerLink="/patrones">Patrones</a>
   </footer>
 }

@@ -86,8 +86,9 @@
               <span class="input-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               </span>
-              <input id="direccion" type="text" [(ngModel)]="direccion" name="direccion" placeholder="Calle, número, colonia" autocomplete="street-address" />
+              <input id="direccion" type="text" [(ngModel)]="direccion" name="direccion" placeholder="Ej: Av. Reforma 222, Juárez, Ciudad de México" autocomplete="street-address" />
             </div>
+            <p class="field-hint">OpenStreetMap (gratis) ubica tu dirección en el mapa de entrega</p>
           </div>
 
           @if (error) {

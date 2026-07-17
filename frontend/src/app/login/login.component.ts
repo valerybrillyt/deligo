@@ -40,6 +40,12 @@ export class LoginComponent {
     this.error = '';
   }
 
+  usarAdmin() {
+    this.email = 'admin@deligo.com';
+    this.password = 'admin123';
+    this.error = '';
+  }
+
   iniciarSesion() {
     this.cargando = true;
     this.error = '';
@@ -50,9 +56,17 @@ export class LoginComponent {
         } else {
           localStorage.removeItem(EMAIL_RECORDADO);
         }
-        this.auth.setSesion(res.usuario.id, res.usuario.nombre, res.token);
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/restaurantes';
-        this.router.navigateByUrl(returnUrl);
+        this.auth.setSesion(
+          res.usuario.id,
+          res.usuario.nombre,
+          res.token,
+          res.usuario.rol,
+          res.usuario.restaurante_id
+        );
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        const destino =
+          returnUrl && res.usuario.rol === 'cliente' ? returnUrl : this.auth.rutaInicioPorRol();
+        this.router.navigateByUrl(destino);
       },
       error: () => {
         this.error = 'Correo o contraseña incorrectos';

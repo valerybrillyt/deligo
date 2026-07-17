@@ -10,7 +10,7 @@ class PedidoEstandar {
     this.restauranteId = d.restauranteId;
     this.items = d.items;
     this.tiempoEstimadoMin = 45;
-    this.costoEnvio = 3.5;
+    this.costoEnvio = 5;
   }
   calcularTotal(subtotal) {
     return subtotal + this.costoEnvio;
@@ -28,7 +28,7 @@ class PedidoExpress {
     this.restauranteId = d.restauranteId;
     this.items = d.items;
     this.tiempoEstimadoMin = 20;
-    this.costoEnvio = 6;
+    this.costoEnvio = 8;
   }
   calcularTotal(subtotal) {
     return subtotal + this.costoEnvio;
@@ -46,7 +46,7 @@ class PedidoProgramado {
     this.restauranteId = d.restauranteId;
     this.items = d.items;
     this.tiempoEstimadoMin = 60;
-    this.costoEnvio = 2;
+    this.costoEnvio = 3.5;
   }
   calcularTotal(subtotal) {
     return subtotal + this.costoEnvio;
@@ -69,9 +69,9 @@ function crearPedido(tipo, datos) {
 
 function listarTiposDisponibles() {
   return [
-    { tipo: 'estandar', etiqueta: 'Entrega normal', tiempo: 45, envio: 3.5, descripcion: 'Envío estándar' },
-    { tipo: 'express', etiqueta: 'Entrega rápida', tiempo: 20, envio: 6, descripcion: 'Prioridad en cocina y reparto' },
-    { tipo: 'programado', etiqueta: 'Programar entrega', tiempo: 60, envio: 2, descripcion: 'Elige tu horario' },
+    { tipo: 'estandar', etiqueta: 'Entrega normal', tiempo: 45, envio: 5, descripcion: 'Envío estándar' },
+    { tipo: 'express', etiqueta: 'Entrega rápida', tiempo: 20, envio: 8, descripcion: 'Prioridad en cocina y reparto' },
+    { tipo: 'programado', etiqueta: 'Programar entrega', tiempo: 60, envio: 3.5, descripcion: 'Elige tu horario' },
   ];
 }
 

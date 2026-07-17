@@ -1,0 +1,15 @@
+.page { max-width: 720px; margin: 0 auto; padding: 1rem; }
+.eyebrow { color: var(--deligo-primary); font-weight: 600; font-size: 0.85rem; }
+.sub { color: var(--deligo-muted); }
+.lista { display: grid; gap: 1rem; margin-top: 1rem; }
+.card { background: var(--deligo-card); border-radius: 12px; padding: 1rem; }
+.top { display: flex; justify-content: space-between; gap: 0.5rem; }
+.estado { background: #fff8f5; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.8rem; }
+.dir { color: var(--deligo-muted); font-size: 0.9rem; }
+.total { font-weight: 600; }
+.actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+button { border: none; background: var(--deligo-primary); color: #fff; padding: 0.5rem 0.85rem; border-radius: 8px; cursor: pointer; }
+button.ok { background: #16a34a; }
+button:disabled { opacity: 0.6; }
+.error { color: #b91c1c; }
+.back { display: inline-block; margin-top: 1.25rem; font-weight: 600; }

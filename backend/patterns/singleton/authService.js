@@ -5,9 +5,9 @@ class AuthService {
     AuthService.instance = this;
   }
 
-  login(userId, email) {
+  login(userId, email, rol = 'cliente', restauranteId = null) {
     const token = `deligo_${userId}_${Date.now()}`;
-    this.sessions.set(token, { userId, email });
+    this.sessions.set(token, { userId, email, rol, restauranteId });
     return token;
   }
 

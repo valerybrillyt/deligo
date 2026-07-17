@@ -10,8 +10,27 @@
   }
 
   @if (misPedidos.length) {
+    <div class="filtros">
+      <button type="button" class="filtro-btn" [class.active]="filtro === 'todos'" (click)="cambiarFiltro('todos')">
+        Todos <span class="badge">{{ contarFiltro('todos') }}</span>
+      </button>
+      <button type="button" class="filtro-btn" [class.active]="filtro === 'pendientes'" (click)="cambiarFiltro('pendientes')">
+        Pendientes <span class="badge">{{ contarFiltro('pendientes') }}</span>
+      </button>
+      <button type="button" class="filtro-btn" [class.active]="filtro === 'entregados'" (click)="cambiarFiltro('entregados')">
+        Entregados <span class="badge">{{ contarFiltro('entregados') }}</span>
+      </button>
+    </div>
+
+    @if (!pedidosFiltrados.length) {
+      <div class="empty-filter">
+        <p>No hay pedidos en esta categoría</p>
+        <button type="button" class="btn-link" (click)="cambiarFiltro('todos')">Ver todos</button>
+      </div>
+    }
+
     <div class="pedidos-tabs">
-      @for (p of misPedidos; track p.id) {
+      @for (p of pedidosFiltrados; track p.id) {
         <button
           type="button"
           class="tab"
@@ -25,14 +44,18 @@
     </div>
   }
 
-  @if (seguimiento) {
+  @if (seguimiento && pedidoVisibleEnFiltro()) {
     <div class="tracking-card">
       <div class="status-header">
         <span class="status-badge" [class]="seguimiento.estado">{{ estadoLabel(seguimiento.estado) }}</span>
-        @if (seguimiento.progreso !== undefined) {
+        @if (seguimiento.progreso !== undefined && seguimiento.estado !== 'cancelado') {
           <span class="pct">{{ seguimiento.progreso }}% completado</span>
         }
       </div>
+
+      @if (seguimiento.metodoPagoLabel) {
+        <p class="pago-line">Pago: <strong>{{ seguimiento.metodoPagoLabel }}</strong> <span class="demo-tag">(simulado)</span></p>
+      }
 
       <div class="timeline">
         @for (paso of seguimiento.pasos; track paso.nombre) {
@@ -43,28 +66,28 @@
         }
       </div>
 
-      <div class="mapa">
-        <div class="mapa-punto origen">
-          <span class="emoji">🍽️</span>
-          <div>
-            <small>Recogido en</small>
-            <strong>{{ seguimiento.origen.nombre }}</strong>
-          </div>
-        </div>
-        <div class="mapa-linea">
-          <div class="repartidor">🛵</div>
-        </div>
-        <div class="mapa-punto destino">
-          <span class="emoji">🏠</span>
-          <div>
-            <small>Entregar en</small>
-            <strong>{{ seguimiento.destino.direccion || 'Tu dirección' }}</strong>
-          </div>
-        </div>
-      </div>
+      @if (puedeCancelar()) {
+        <button type="button" class="btn-cancelar" [disabled]="cancelando" (click)="cancelarPedido()">
+          {{ cancelando ? 'Cancelando...' : 'Cancelar pedido' }}
+        </button>
+      }
 
-      @if (seguimiento.estado !== 'entregado') {
-        <p class="refresh-hint">El estado se actualiza automáticamente cada 8 segundos</p>
+      @if (seguimiento.estado !== 'cancelado') {
+      <div class="mapa-wrap">
+        <div id="delivery-map" class="mapa-real"></div>
+        <p class="mapa-leyenda">
+          🍽️ {{ seguimiento.origen.nombre }} → 🛵 repartidor → 🏠 {{ seguimiento.destino.direccion || 'Tu dirección' }}
+        </p>
+        @if (seguimiento.mapa?.proveedor) {
+          <p class="mapa-proveedor">Mapa gratis: {{ seguimiento.mapa?.proveedor }}</p>
+        }
+      </div>
+      } @else {
+        <p class="cancel-msg">Este pedido fue cancelado. No se realizó ningún cobro.</p>
+      }
+
+      @if (seguimiento.estado !== 'entregado' && seguimiento.estado !== 'cancelado') {
+        <p class="refresh-hint">El repartidor avanza en el mapa cada 8 segundos</p>
       }
     </div>
   } @else if (error && auth.estaLogueado()) {

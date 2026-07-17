@@ -5,21 +5,19 @@ const logService = require('../patterns/singleton/logService');
 const { crearPedido, listarTiposDisponibles } = require('../patterns/factory/orderFactory');
 const { aplicarDecoradores, listarExtrasDisponibles } = require('../patterns/decorator/orderDecorator');
 const { construirMenuDesdeProductos } = require('../patterns/composite/menuComposite');
+const { geocode, obtenerRuta, puntoEnRuta, DEFAULT_LIMA } = require('../services/geoService');
+const {
+  ROLES,
+  DESCRIPCION_ROLES,
+  usuarioDesdeRequest,
+  requiereSesion,
+  requiereRol,
+} = require('../middleware/roles');
 
 const router = express.Router();
 
 function clientIp(req) {
   return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '';
-}
-
-function usuarioDesdeRequest(req) {
-  const h = req.headers['x-usuario-id'];
-  if (h) return Number(h) || null;
-  const b = req.body?.usuarioId;
-  if (b) return Number(b) || null;
-  const q = req.query?.usuarioId;
-  if (q) return Number(q) || null;
-  return null;
 }
 
 /** Documentación de patrones para la exposición / frontend */
@@ -91,30 +89,30 @@ router.post('/logs', (req, res) => {
   }
 });
 
-/** Ver historial de acciones (DBeaver / exposición) */
+/** Roles del sistema (documentación) */
+router.get('/roles', (_req, res) => {
+  res.json({ roles: DESCRIPCION_ROLES });
+});
+
+/** Ver historial de acciones — solo administrador */
 router.get('/logs', (req, res) => {
   try {
-    const usuarioId = req.query.usuarioId;
-    let rows;
-    if (usuarioId) {
-      [rows] = db.getPool().query(
-        `SELECT l.id, l.usuario_id, l.accion, l.detalle, l.ruta, l.exito, l.creado_en,
-                u.nombre AS usuario_nombre, u.email AS usuario_email
-         FROM logs l
-         LEFT JOIN usuarios u ON u.id = l.usuario_id
-         WHERE l.usuario_id = ?
-         ORDER BY l.id DESC LIMIT 200`,
-        [Number(usuarioId)]
-      );
-    } else {
-      [rows] = db.getPool().query(
-        `SELECT l.id, l.usuario_id, l.accion, l.detalle, l.ruta, l.exito, l.creado_en,
-                u.nombre AS usuario_nombre, u.email AS usuario_email
-         FROM logs l
-         LEFT JOIN usuarios u ON u.id = l.usuario_id
-         ORDER BY l.id DESC LIMIT 200`
-      );
-    }
+    const admin = requiereRol(req, res, db, [ROLES.ADMIN]);
+    if (!admin) return;
+
+    const [rows] = db.getPool().query(
+      `SELECT l.id, l.usuario_id, l.accion, l.detalle, l.ruta, l.exito, l.creado_en,
+              u.nombre AS usuario_nombre, u.email AS usuario_email, u.rol AS usuario_rol
+       FROM logs l
+       LEFT JOIN usuarios u ON u.id = l.usuario_id
+       ORDER BY l.id DESC LIMIT 300`
+    );
+    logService.registrar({
+      usuarioId: admin.id,
+      accion: 'VER_LOGS_ADMIN',
+      ruta: '/api/logs',
+      ip: clientIp(req),
+    });
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -123,7 +121,9 @@ router.get('/logs', (req, res) => {
 
 router.get('/restaurantes', (req, res) => {
   try {
-    const uid = usuarioDesdeRequest(req);
+    const user = requiereRol(req, res, db, [ROLES.CLIENTE, ROLES.ADMIN]);
+    if (!user) return;
+    const uid = user.id;
     logService.registrar({
       usuarioId: uid,
       accion: 'VER_RESTAURANTES',
@@ -146,21 +146,34 @@ router.get('/restaurantes', (req, res) => {
   }
 });
 
-router.post('/usuarios/registro', (req, res) => {
+router.post('/usuarios/registro', async (req, res) => {
   try {
     const { nombre, email, password, direccion, latitud, longitud } = req.body;
+    let lat = Number(latitud) || null;
+    let lng = Number(longitud) || null;
+
+    if (direccion?.trim()) {
+      const geo = await geocode(direccion);
+      lat = geo.lat;
+      lng = geo.lng;
+    }
+    if (!lat || !lng) {
+      lat = DEFAULT_LIMA.lat;
+      lng = DEFAULT_LIMA.lng;
+    }
+
     const [r] = db.getPool().query(
-      'INSERT INTO usuarios (nombre, email, password, direccion, latitud, longitud) VALUES (?,?,?,?,?,?)',
-      [nombre, email, password, direccion || '', latitud || 19.4326, longitud || -99.1332]
+      "INSERT INTO usuarios (nombre, email, password, direccion, latitud, longitud, rol) VALUES (?,?,?,?,?,?,'cliente')",
+      [nombre, email, password, direccion || '', lat, lng]
     );
     logService.registrar({
       usuarioId: r.insertId,
       accion: 'REGISTRO_OK',
-      detalle: `email=${email}`,
+      detalle: `email=${email} geo=${lat},${lng}`,
       ruta: '/api/usuarios/registro',
       ip: clientIp(req),
     });
-    res.status(201).json({ id: r.insertId, mensaje: 'Usuario registrado' });
+    res.status(201).json({ id: r.insertId, mensaje: 'Usuario registrado', latitud: lat, longitud: lng });
   } catch (err) {
     logService.registrar({
       accion: 'REGISTRO_ERROR',
@@ -177,7 +190,7 @@ router.post('/usuarios/login', (req, res) => {
   try {
     const { email, password } = req.body;
     const [rows] = db.getPool().query(
-      'SELECT id, nombre, email FROM usuarios WHERE email=? AND password=?',
+      'SELECT id, nombre, email, rol, restaurante_id FROM usuarios WHERE email=? AND password=?',
       [email, password]
     );
     if (!rows.length) {
@@ -191,7 +204,7 @@ router.post('/usuarios/login', (req, res) => {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
     const user = rows[0];
-    const token = authService.login(user.id, user.email);
+    const token = authService.login(user.id, user.email, user.rol, user.restaurante_id);
     logService.registrar({
       usuarioId: user.id,
       accion: 'LOGIN_OK',
@@ -199,7 +212,16 @@ router.post('/usuarios/login', (req, res) => {
       ruta: '/api/usuarios/login',
       ip: clientIp(req),
     });
-    res.json({ token, usuario: user });
+    res.json({
+      token,
+      usuario: {
+        id: user.id,
+        nombre: user.nombre,
+        email: user.email,
+        rol: user.rol || ROLES.CLIENTE,
+        restaurante_id: user.restaurante_id,
+      },
+    });
   } catch (err) {
     logService.registrar({
       accion: 'LOGIN_ERROR',
@@ -213,8 +235,10 @@ router.post('/usuarios/login', (req, res) => {
 
 router.get('/restaurantes/:id/menu', (req, res) => {
   try {
+    const user = requiereRol(req, res, db, [ROLES.CLIENTE, ROLES.ADMIN]);
+    if (!user) return;
     const restId = Number(req.params.id);
-    const uid = usuarioDesdeRequest(req);
+    const uid = user.id;
     logService.registrar({
       usuarioId: uid,
       accion: 'VER_MENU',
@@ -241,9 +265,20 @@ router.get('/pedidos/extras', (req, res) => {
   res.json({ patron: 'Decorator', extras: listarExtrasDisponibles() });
 });
 
+const METODOS_PAGO = {
+  efectivo: 'Efectivo al recibir',
+  tarjeta: 'Tarjeta (demo — sin cargo real)',
+  yape: 'Yape / Plin (demo — sin cargo real)',
+};
+
 router.post('/pedidos', (req, res) => {
   try {
-    const { usuarioId, restauranteId, items, tipoPedido, extras, subtotal } = req.body;
+    const user = requiereRol(req, res, db, [ROLES.CLIENTE, ROLES.ADMIN]);
+    if (!user) return;
+
+    const { restauranteId, items, tipoPedido, extras, subtotal, metodoPago } = req.body;
+    const usuarioId = user.rol === ROLES.ADMIN && req.body.usuarioId ? req.body.usuarioId : user.id;
+    const pago = METODOS_PAGO[metodoPago] ? metodoPago : 'efectivo';
     const pedido = crearPedido(tipoPedido || 'estandar', { usuarioId, restauranteId, items });
     const decorado = aplicarDecoradores(pedido, extras || []);
     const sub = Number(subtotal) || 0;
@@ -252,14 +287,14 @@ router.post('/pedidos', (req, res) => {
     const total = pedido.calcularTotal(sub) + costoExtras;
 
     const [r] = db.getPool().query(
-      'INSERT INTO pedidos (usuario_id, restaurante_id, tipo, descripcion_extra, total, estado) VALUES (?,?,?,?,?,?)',
-      [usuarioId, restauranteId, pedido.tipo, decorado.descripcion(), total, 'pendiente']
+      'INSERT INTO pedidos (usuario_id, restaurante_id, tipo, descripcion_extra, total, estado, metodo_pago) VALUES (?,?,?,?,?,?,?)',
+      [usuarioId, restauranteId, pedido.tipo, decorado.descripcion(), total, 'pendiente', pago]
     );
 
     logService.registrar({
       usuarioId,
       accion: 'CREAR_PEDIDO',
-      detalle: `pedido_id=${r.insertId} total=${total} tipo=${pedido.tipo}`,
+      detalle: `pedido_id=${r.insertId} total=${total} pago=${pago}`,
       ruta: '/api/pedidos',
       ip: clientIp(req),
     });
@@ -271,6 +306,9 @@ router.post('/pedidos', (req, res) => {
       costoEnvio,
       costoExtras,
       tiempoEstimadoMin: pedido.tiempoEstimadoMin,
+      metodoPago: pago,
+      metodoPagoLabel: METODOS_PAGO[pago],
+      pagoSimulado: true,
     });
   } catch (err) {
     logService.registrar({
@@ -286,27 +324,50 @@ router.post('/pedidos', (req, res) => {
 
 router.get('/pedidos', (req, res) => {
   try {
-    const usuarioId = req.query.usuarioId;
+    const user = requiereSesion(req, res, db);
+    if (!user) return;
+
     logService.registrar({
-      usuarioId: usuarioId ? Number(usuarioId) : null,
+      usuarioId: user.id,
       accion: 'VER_PEDIDOS',
+      detalle: `rol=${user.rol}`,
       ruta: '/api/pedidos',
       ip: clientIp(req),
     });
+
+    const baseSql = `
+      SELECT p.id, p.total, p.estado, p.tipo, p.metodo_pago, p.usuario_id, p.restaurante_id,
+             r.nombre AS restaurante, u.nombre AS cliente_nombre, u.direccion AS cliente_direccion
+      FROM pedidos p
+      JOIN restaurantes r ON r.id = p.restaurante_id
+      JOIN usuarios u ON u.id = p.usuario_id`;
+
     let rows;
-    if (usuarioId) {
-      [rows] = db.getPool().query(
-        `SELECT p.id, p.total, p.estado, p.tipo, r.nombre AS restaurante
-         FROM pedidos p JOIN restaurantes r ON r.id = p.restaurante_id
-         WHERE p.usuario_id = ? ORDER BY p.id DESC`,
-        [usuarioId]
-      );
-    } else {
-      [rows] = db.getPool().query(
-        `SELECT p.id, p.total, p.estado, p.tipo, r.nombre AS restaurante
-         FROM pedidos p JOIN restaurantes r ON r.id = p.restaurante_id
-         ORDER BY p.id DESC LIMIT 20`
-      );
+    switch (user.rol) {
+      case ROLES.ADMIN:
+        [rows] = db.getPool().query(`${baseSql} ORDER BY p.id DESC LIMIT 100`);
+        break;
+      case ROLES.REPARTIDOR:
+        [rows] = db.getPool().query(
+          `${baseSql}
+           WHERE p.estado IN ('preparando', 'en_camino', 'pendiente')
+           ORDER BY p.id DESC LIMIT 50`
+        );
+        break;
+      case ROLES.RESTAURANTE:
+        if (!user.restaurante_id) {
+          return res.status(400).json({ error: 'Tu cuenta de restaurante no tiene local asignado' });
+        }
+        [rows] = db.getPool().query(
+          `${baseSql} WHERE p.restaurante_id = ? ORDER BY p.id DESC LIMIT 50`,
+          [user.restaurante_id]
+        );
+        break;
+      default:
+        [rows] = db.getPool().query(
+          `${baseSql} WHERE p.usuario_id = ? ORDER BY p.id DESC`,
+          [user.id]
+        );
     }
     res.json(rows);
   } catch (err) {
@@ -314,19 +375,22 @@ router.get('/pedidos', (req, res) => {
   }
 });
 
-router.get('/pedidos/:id/seguimiento', (req, res) => {
+router.get('/pedidos/:id/seguimiento', async (req, res) => {
   try {
+    const user = requiereSesion(req, res, db);
+    if (!user) return;
+
     const id = Number(req.params.id);
-    const uid = usuarioDesdeRequest(req);
     logService.registrar({
-      usuarioId: uid,
+      usuarioId: user.id,
       accion: 'VER_SEGUIMIENTO',
-      detalle: `pedido_id=${id}`,
+      detalle: `pedido_id=${id} rol=${user.rol}`,
       ruta: `/api/pedidos/${id}/seguimiento`,
       ip: clientIp(req),
     });
     const [rows] = db.getPool().query(
-      `SELECT p.estado, p.total, p.tipo, r.nombre AS restaurante, r.latitud AS rest_lat, r.longitud AS rest_lng,
+      `SELECT p.estado, p.total, p.tipo, p.metodo_pago, p.usuario_id, p.restaurante_id,
+              r.nombre AS restaurante, r.latitud AS rest_lat, r.longitud AS rest_lng,
               u.direccion, u.latitud AS user_lat, u.longitud AS user_lng
        FROM pedidos p
        JOIN restaurantes r ON r.id = p.restaurante_id
@@ -335,14 +399,37 @@ router.get('/pedidos/:id/seguimiento', (req, res) => {
       [id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Pedido no encontrado' });
-    const p = rows[0];
+
+    const pedido = rows[0];
+    const puedeVer =
+      user.rol === ROLES.ADMIN ||
+      user.rol === ROLES.REPARTIDOR ||
+      (user.rol === ROLES.RESTAURANTE && pedido.restaurante_id === user.restaurante_id) ||
+      (user.rol === ROLES.CLIENTE && pedido.usuario_id === user.id);
+    if (!puedeVer) {
+      return res.status(403).json({ error: 'No puedes ver este pedido' });
+    }
+    const p = pedido;
     const pasos = ['pendiente', 'preparando', 'en_camino', 'entregado'];
     const indice = pasos.indexOf(p.estado);
+    const origen = { lat: p.rest_lat, lng: p.rest_lng };
+    const destino = { lat: p.user_lat, lng: p.user_lng };
+    const cancelado = p.estado === 'cancelado';
+    let coordenadas = [];
+    let repartidor = origen;
+    if (!cancelado) {
+      coordenadas = await obtenerRuta(origen, destino);
+      const progresoRuta = { pendiente: 0, preparando: 12, en_camino: 58, entregado: 100 };
+      repartidor = puntoEnRuta(coordenadas, progresoRuta[p.estado] ?? 0);
+    }
+
     res.json({
       pedidoId: id,
       estado: p.estado,
       total: p.total,
       tipo: p.tipo,
+      metodoPago: p.metodo_pago || 'efectivo',
+      metodoPagoLabel: METODOS_PAGO[p.metodo_pago] || METODOS_PAGO.efectivo,
       progreso: indice >= 0 ? Math.round(((indice + 1) / pasos.length) * 100) : 25,
       pasos: pasos.map((nombre, i) => ({
         nombre,
@@ -351,10 +438,10 @@ router.get('/pedidos/:id/seguimiento', (req, res) => {
       })),
       origen: { lat: p.rest_lat, lng: p.rest_lng, nombre: p.restaurante },
       destino: { lat: p.user_lat, lng: p.user_lng, direccion: p.direccion },
-      ruta: {
-        mensaje: 'Coordenadas listas para Google Maps API',
-        desde: [p.rest_lat, p.rest_lng],
-        hasta: [p.user_lat, p.user_lng],
+      mapa: {
+        proveedor: 'OpenStreetMap + OSRM (gratis)',
+        coordenadas,
+        repartidor,
       },
     });
   } catch (err) {
@@ -362,18 +449,86 @@ router.get('/pedidos/:id/seguimiento', (req, res) => {
   }
 });
 
+router.post('/pedidos/:id/cancelar', (req, res) => {
+  try {
+    const user = requiereRol(req, res, db, [ROLES.CLIENTE, ROLES.ADMIN]);
+    if (!user) return;
+
+    const id = Number(req.params.id);
+    const [rows] = db.getPool().query('SELECT estado, usuario_id FROM pedidos WHERE id = ?', [id]);
+    if (!rows.length) return res.status(404).json({ error: 'Pedido no encontrado' });
+    const ped = rows[0];
+    if (user.rol !== ROLES.ADMIN && ped.usuario_id !== user.id) {
+      return res.status(403).json({ error: 'Solo puedes cancelar tus propios pedidos' });
+    }
+    if (!['pendiente', 'preparando'].includes(ped.estado)) {
+      return res.status(400).json({ error: 'Solo puedes cancelar pedidos que aún no van en camino' });
+    }
+    db.getPool().query('UPDATE pedidos SET estado = ? WHERE id = ?', ['cancelado', id]);
+    logService.registrar({
+      usuarioId: ped.usuario_id,
+      accion: 'CANCELAR_PEDIDO',
+      detalle: `pedido_id=${id}`,
+      ip: clientIp(req),
+    });
+    res.json({ ok: true, estado: 'cancelado', mensaje: 'Pedido cancelado. No se realizó ningún cobro.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/pedidos/metodos-pago', (req, res) => {
+  res.json({
+    simulado: true,
+    mensaje: 'Pagos de demostración — no se conecta a bancos ni Yape real',
+    metodos: Object.entries(METODOS_PAGO).map(([codigo, etiqueta]) => ({ codigo, etiqueta })),
+  });
+});
+
 router.patch('/pedidos/:id/estado', (req, res) => {
   try {
+    const user = requiereSesion(req, res, db);
+    if (!user) return;
+
     const { estado } = req.body;
-    const validos = ['pendiente', 'preparando', 'en_camino', 'entregado'];
+    const validos = ['pendiente', 'preparando', 'en_camino', 'entregado', 'cancelado'];
     if (!validos.includes(estado)) {
       return res.status(400).json({ error: 'Estado inválido' });
     }
-    db.getPool().query('UPDATE pedidos SET estado = ? WHERE id = ?', [estado, req.params.id]);
+
+    const id = Number(req.params.id);
+    const [rows] = db.getPool().query(
+      'SELECT estado, usuario_id, restaurante_id FROM pedidos WHERE id = ?',
+      [id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Pedido no encontrado' });
+    const ped = rows[0];
+
+    const permitido = {
+      [ROLES.ADMIN]: validos,
+      [ROLES.REPARTIDOR]: ['en_camino', 'entregado'],
+      [ROLES.RESTAURANTE]: ['preparando'],
+      [ROLES.CLIENTE]: [],
+    };
+    const estadosRol = permitido[user.rol] || [];
+    const esAdmin = user.rol === ROLES.ADMIN;
+    const esRepartidor = user.rol === ROLES.REPARTIDOR && estadosRol.includes(estado);
+    const esRestaurante =
+      user.rol === ROLES.RESTAURANTE &&
+      ped.restaurante_id === user.restaurante_id &&
+      estadosRol.includes(estado) &&
+      ped.estado === 'pendiente' &&
+      estado === 'preparando';
+
+    if (!esAdmin && !esRepartidor && !esRestaurante) {
+      return res.status(403).json({ error: 'Tu rol no puede cambiar a ese estado' });
+    }
+
+    db.getPool().query('UPDATE pedidos SET estado = ? WHERE id = ?', [estado, id]);
     logService.registrar({
       usuarioId: usuarioDesdeRequest(req),
       accion: 'CAMBIO_ESTADO_PEDIDO',
-      detalle: `pedido_id=${req.params.id} nuevo_estado=${estado}`,
+      detalle: `pedido_id=${id} nuevo_estado=${estado} rol=${user.rol}`,
       ip: clientIp(req),
     });
     res.json({ ok: true, estado });
