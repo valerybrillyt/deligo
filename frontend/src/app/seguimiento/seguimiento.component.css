@@ -82,6 +82,19 @@
   font-weight: 700;
 }
 .btn-cancelar:hover:not(:disabled) { background: #fee2e2; }
+.btn-deshacer {
+  display: inline-block;
+  margin: 0.5rem 0.5rem 0.5rem 0;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #14b8a6;
+  background: #f0fdfa;
+  color: #0f766e;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-deshacer:hover:not(:disabled) { background: #ccfbf1; }
+.btn-deshacer:disabled { opacity: 0.6; cursor: not-allowed; }
 .cancel-msg {
   text-align: center;
   padding: 2rem 1rem;

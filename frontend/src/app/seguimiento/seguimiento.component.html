@@ -71,6 +71,9 @@
           {{ cancelando ? 'Cancelando...' : 'Cancelar pedido' }}
         </button>
       }
+      <button type="button" class="btn-deshacer" [disabled]="deshaciendo" (click)="deshacerCambio()">
+        {{ deshaciendo ? 'Deshaciendo...' : 'Deshacer último cambio (Memento)' }}
+      </button>
 
       @if (seguimiento.estado !== 'cancelado') {
       <div class="mapa-wrap">

@@ -1,5 +1,5 @@
 <h1>Patrones de diseño en DeliGo</h1>
-<p class="intro">Todos se implementan en el <strong>backend</strong> (JavaScript). El frontend los usa al llamar al API.</p>
+<p class="intro">Se implementan en el <strong>backend</strong> (JavaScript). Incluye los 4 originales + State, Memento, Microservicios y Antipatrones.</p>
 
 @if (error) {
   <p class="error">{{ error }}</p>
@@ -47,6 +47,62 @@
     <p>{{ doc.composite.uso }}</p>
     <p class="en-web">En la web: <strong>Menú</strong> → categorías con productos dentro (árbol).</p>
   </section>
+
+  @if (doc.state) {
+    <section class="card state">
+      <h2>State</h2>
+      <p class="donde">📁 {{ doc.state.archivo }}</p>
+      <p>{{ doc.state.uso }}</p>
+      <ul>
+        @for (e of doc.state.estados; track e.codigo) {
+          <li>
+            <strong>{{ e.codigo }}</strong> → siguientes:
+            {{ e.siguientes.length ? e.siguientes.join(', ') : 'ninguno (final)' }}
+          </li>
+        }
+      </ul>
+      <p class="en-web">En la web: cuando restaurante/repartidor cambia el estado del pedido (o al cancelar).</p>
+    </section>
+  }
+
+  @if (doc.memento) {
+    <section class="card memento">
+      <h2>Memento</h2>
+      <p class="donde">📁 {{ doc.memento.archivo }}</p>
+      <p>{{ doc.memento.uso }}</p>
+      <p class="en-web">API: <code>POST /api/pedidos/:id/deshacer</code> restaura el snapshot anterior.</p>
+    </section>
+  }
+
+  @if (doc.microservicios) {
+    <section class="card micro">
+      <h2>Microservicios</h2>
+      <p class="donde">📁 backend/patterns/microservicios/arquitectura.js</p>
+      <p>{{ doc.microservicios.estilo }}</p>
+      <p>{{ doc.microservicios.comunicacion }}</p>
+      <ul>
+        @for (s of doc.microservicios.servicios; track s.codigo) {
+          <li><strong>{{ s.nombre }}</strong> — {{ s.responsabilidad }}</li>
+        }
+      </ul>
+      <p class="en-web">Hoy es monolito modular; los límites ya están listos para escalar.</p>
+    </section>
+  }
+
+  @if (doc.antipatrones) {
+    <section class="card anti">
+      <h2>Antipatrones (lo que evitamos)</h2>
+      <p>{{ doc.antipatrones.definicion }}</p>
+      <ul>
+        @for (a of doc.antipatrones.evitadosEnDeligo; track a.codigo) {
+          <li>
+            <strong>{{ a.nombre }}</strong>: {{ a.problema }}
+            <br /><em>DeliGo:</em> {{ a.comoLoEvitamos }}
+          </li>
+        }
+      </ul>
+    </section>
+  }
 }
 
 <a routerLink="/" class="btn-back">← Volver al inicio</a>

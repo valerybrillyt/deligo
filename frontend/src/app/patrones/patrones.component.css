@@ -10,6 +10,10 @@
 .factory { border-left-color: #22c55e; }
 .decorator { border-left-color: #eab308; }
 .composite { border-left-color: #3b82f6; }
+.state { border-left-color: #f97316; }
+.memento { border-left-color: #14b8a6; }
+.micro { border-left-color: #a855f7; }
+.anti { border-left-color: #ef4444; }
 .donde { font-size: 0.85rem; color: var(--deligo-muted); }
 .en-web { background: #fff8f5; padding: 0.5rem 0.75rem; border-radius: 8px; margin-top: 0.75rem; font-size: 0.9rem; }
 code { background: #f1f5f9; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.8rem; }

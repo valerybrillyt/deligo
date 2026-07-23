@@ -5,6 +5,10 @@ const logService = require('../patterns/singleton/logService');
 const { crearPedido, listarTiposDisponibles } = require('../patterns/factory/orderFactory');
 const { aplicarDecoradores, listarExtrasDisponibles } = require('../patterns/decorator/orderDecorator');
 const { construirMenuDesdeProductos } = require('../patterns/composite/menuComposite');
+const { PedidoContexto, listarEstadosDisponibles } = require('../patterns/state/orderState');
+const { PedidoOriginator, historialPedidos } = require('../patterns/memento/orderMemento');
+const { listarMicroservicios, describirServicio } = require('../patterns/microservicios/arquitectura');
+const { listarAntipatrones } = require('../patterns/antipatrones/catalogo');
 const { geocode, obtenerRuta, puntoEnRuta, DEFAULT_LIMA } = require('../services/geoService');
 const {
   ROLES,
@@ -18,6 +22,17 @@ const router = express.Router();
 
 function clientIp(req) {
   return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '';
+}
+
+function guardarMementoPedido(pedidoId, fila) {
+  const originator = new PedidoOriginator({
+    estado: fila.estado,
+    total: fila.total,
+    tipo: fila.tipo,
+    descripcionExtra: fila.descripcion_extra,
+    metodoPago: fila.metodo_pago,
+  });
+  historialPedidos.guardar(pedidoId, originator.crearMemento());
 }
 
 /** Documentación de patrones para la exposición / frontend */
@@ -51,7 +66,37 @@ router.get('/patrones', (req, res) => {
       archivo: 'patterns/composite/menuComposite.js',
       uso: 'Menú en árbol: categoría (composite) → productos (hojas)',
     },
+    state: {
+      archivo: 'patterns/state/orderState.js',
+      uso: 'Cada estado del pedido sabe a cuáles puede pasar (sin if/else gigantes)',
+      estados: listarEstadosDisponibles(),
+    },
+    memento: {
+      archivo: 'patterns/memento/orderMemento.js',
+      uso: 'Guarda snapshot del pedido antes de cambiar estado; permite deshacer',
+      historial: historialPedidos.info(),
+    },
+    microservicios: listarMicroservicios(),
+    antipatrones: listarAntipatrones(),
   });
+});
+
+router.get('/microservicios', (_req, res) => {
+  res.json(listarMicroservicios());
+});
+
+router.get('/microservicios/:codigo', (req, res) => {
+  const s = describirServicio(req.params.codigo);
+  if (!s) return res.status(404).json({ error: 'Servicio no definido' });
+  res.json(s);
+});
+
+router.get('/antipatrones', (_req, res) => {
+  res.json(listarAntipatrones());
+});
+
+router.get('/pedidos/estados', (_req, res) => {
+  res.json({ patron: 'State', estados: listarEstadosDisponibles() });
 });
 
 router.get('/health', (req, res) => {
@@ -64,7 +109,16 @@ router.get('/health', (req, res) => {
       restaurantes: rows[0].n,
       logs: logs[0].n,
       mensaje: 'Backend y SQLite conectados',
-      patronesActivos: ['Singleton', 'Factory', 'Decorator', 'Composite'],
+      patronesActivos: [
+        'Singleton',
+        'Factory',
+        'Decorator',
+        'Composite',
+        'State',
+        'Memento',
+        'Microservicios',
+        'Antipatrones',
+      ],
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -455,23 +509,40 @@ router.post('/pedidos/:id/cancelar', (req, res) => {
     if (!user) return;
 
     const id = Number(req.params.id);
-    const [rows] = db.getPool().query('SELECT estado, usuario_id FROM pedidos WHERE id = ?', [id]);
+    const [rows] = db.getPool().query(
+      'SELECT estado, usuario_id, total, tipo, descripcion_extra, metodo_pago FROM pedidos WHERE id = ?',
+      [id]
+    );
     if (!rows.length) return res.status(404).json({ error: 'Pedido no encontrado' });
     const ped = rows[0];
     if (user.rol !== ROLES.ADMIN && ped.usuario_id !== user.id) {
       return res.status(403).json({ error: 'Solo puedes cancelar tus propios pedidos' });
     }
-    if (!['pendiente', 'preparando'].includes(ped.estado)) {
-      return res.status(400).json({ error: 'Solo puedes cancelar pedidos que aún no van en camino' });
+
+    // PATRÓN STATE: solo estados que permiten cancelar
+    const ctx = new PedidoContexto(ped.estado);
+    try {
+      ctx.transicionar('cancelado');
+    } catch (e) {
+      return res.status(400).json({ error: e.message, patron: 'State' });
     }
+
+    // PATRÓN MEMENTO: guardar estado anterior antes de cancelar
+    guardarMementoPedido(id, ped);
+
     db.getPool().query('UPDATE pedidos SET estado = ? WHERE id = ?', ['cancelado', id]);
     logService.registrar({
       usuarioId: ped.usuario_id,
       accion: 'CANCELAR_PEDIDO',
-      detalle: `pedido_id=${id}`,
+      detalle: `pedido_id=${id} memento_guardado=1 patron=State+Memento`,
       ip: clientIp(req),
     });
-    res.json({ ok: true, estado: 'cancelado', mensaje: 'Pedido cancelado. No se realizó ningún cobro.' });
+    res.json({
+      ok: true,
+      estado: 'cancelado',
+      mensaje: 'Pedido cancelado. No se realizó ningún cobro.',
+      patrones: { state: true, memento: true, historial: historialPedidos.cantidad(id) },
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -498,7 +569,7 @@ router.patch('/pedidos/:id/estado', (req, res) => {
 
     const id = Number(req.params.id);
     const [rows] = db.getPool().query(
-      'SELECT estado, usuario_id, restaurante_id FROM pedidos WHERE id = ?',
+      'SELECT estado, usuario_id, restaurante_id, total, tipo, descripcion_extra, metodo_pago FROM pedidos WHERE id = ?',
       [id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Pedido no encontrado' });
@@ -524,14 +595,94 @@ router.patch('/pedidos/:id/estado', (req, res) => {
       return res.status(403).json({ error: 'Tu rol no puede cambiar a ese estado' });
     }
 
+    // PATRÓN STATE: valida la transición (admin puede forzar)
+    const ctx = new PedidoContexto(ped.estado);
+    let transicion;
+    try {
+      transicion = ctx.transicionar(estado);
+    } catch (e) {
+      if (!esAdmin) {
+        return res.status(400).json({ error: e.message, patron: 'State' });
+      }
+      // Admin puede forzar (documentado en respuesta)
+      ctx.setEstado(estado);
+      transicion = { anterior: ped.estado, actual: estado, forzadoPorAdmin: true };
+    }
+
+    // PATRÓN MEMENTO: snapshot antes de actualizar
+    guardarMementoPedido(id, ped);
+
     db.getPool().query('UPDATE pedidos SET estado = ? WHERE id = ?', [estado, id]);
     logService.registrar({
       usuarioId: usuarioDesdeRequest(req),
       accion: 'CAMBIO_ESTADO_PEDIDO',
-      detalle: `pedido_id=${id} nuevo_estado=${estado} rol=${user.rol}`,
+      detalle: `pedido_id=${id} ${transicion.anterior}→${transicion.actual} rol=${user.rol}`,
       ip: clientIp(req),
     });
-    res.json({ ok: true, estado });
+    res.json({
+      ok: true,
+      estado,
+      patron: 'State',
+      memento: true,
+      historial: historialPedidos.cantidad(id),
+      info: ctx.info(),
+      forzadoPorAdmin: !!transicion.forzadoPorAdmin,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** Deshacer último cambio de estado (Memento) — admin o dueño del pedido */
+router.post('/pedidos/:id/deshacer', (req, res) => {
+  try {
+    const user = requiereSesion(req, res, db);
+    if (!user) return;
+
+    const id = Number(req.params.id);
+    const [rows] = db.getPool().query(
+      'SELECT estado, usuario_id, total, tipo, descripcion_extra, metodo_pago FROM pedidos WHERE id = ?',
+      [id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Pedido no encontrado' });
+    const ped = rows[0];
+
+    if (user.rol !== ROLES.ADMIN && ped.usuario_id !== user.id) {
+      return res.status(403).json({ error: 'No puedes deshacer este pedido' });
+    }
+
+    const memento = historialPedidos.deshacer(id);
+    if (!memento) {
+      return res.status(400).json({
+        error: 'No hay historial Memento para este pedido (cambia el estado primero)',
+        patron: 'Memento',
+      });
+    }
+
+    const originator = new PedidoOriginator(ped);
+    originator.restaurar(memento);
+    const snap = originator.snapshot();
+
+    db.getPool().query(
+      'UPDATE pedidos SET estado = ?, total = ?, tipo = ?, descripcion_extra = ?, metodo_pago = ? WHERE id = ?',
+      [snap.estado, snap.total, snap.tipo, snap.descripcionExtra, snap.metodoPago, id]
+    );
+
+    logService.registrar({
+      usuarioId: user.id,
+      accion: 'DESHACER_ESTADO_MEMENTO',
+      detalle: `pedido_id=${id} restaurado_a=${snap.estado}`,
+      ip: clientIp(req),
+    });
+
+    res.json({
+      ok: true,
+      patron: 'Memento',
+      estadoRestaurado: snap.estado,
+      snapshot: snap,
+      historialRestante: historialPedidos.cantidad(id),
+      mensaje: `Pedido restaurado a estado "${snap.estado}"`,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -31,6 +31,7 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
   filtro: FiltroPedidos = 'todos';
   error = '';
   cancelando = false;
+  deshaciendo = false;
   private intervalo?: ReturnType<typeof setInterval>;
   private ticks = 0;
   private mapa?: { remove: () => void; setView: (c: number[], z: number) => void; fitBounds: (b: unknown, o: object) => void; removeLayer: (l: unknown) => void; invalidateSize: () => void };
@@ -156,6 +157,24 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.cancelando = false;
         this.error = err.error?.error || 'No se pudo cancelar';
+      },
+    });
+  }
+
+  /** Patrón Memento: restaura el estado anterior del pedido */
+  deshacerCambio() {
+    if (!this.pedidoId) return;
+    this.deshaciendo = true;
+    this.api.deshacerPedido(this.pedidoId).subscribe({
+      next: (res) => {
+        this.deshaciendo = false;
+        this.cargarSeguimiento();
+        this.cargarLista();
+        alert(res.mensaje || `Restaurado a: ${res.estadoRestaurado}`);
+      },
+      error: (err) => {
+        this.deshaciendo = false;
+        this.error = err.error?.error || 'No hay historial Memento aún';
       },
     });
   }

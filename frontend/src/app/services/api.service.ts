@@ -60,6 +60,15 @@ export class ApiService {
     return this.http.post<{ ok: boolean; mensaje: string }>(`${API}/pedidos/${pedidoId}/cancelar`, {});
   }
 
+  deshacerPedido(pedidoId: number) {
+    return this.http.post<{
+      ok: boolean;
+      estadoRestaurado: string;
+      mensaje: string;
+      patron: string;
+    }>(`${API}/pedidos/${pedidoId}/deshacer`, {});
+  }
+
   getMetodosPago() {
     return this.http.get<{ metodos: Array<{ codigo: string; etiqueta: string }>; simulado: boolean; mensaje: string }>(
       `${API}/pedidos/metodos-pago`
@@ -203,4 +212,26 @@ export interface PatronesDoc {
   factory: { archivo: string; uso: string; tipos: TipoPedido[] };
   decorator: { archivo: string; uso: string; extras: ExtraPedido[] };
   composite: { archivo: string; uso: string };
+  state?: {
+    archivo: string;
+    uso: string;
+    estados: Array<{ codigo: string; mensaje: string; siguientes: string[] }>;
+  };
+  memento?: { archivo: string; uso: string; historial?: { patron: string; pedidosConHistorial: number; descripcion: string } };
+  microservicios?: {
+    estilo: string;
+    comunicacion: string;
+    ejemploClase: string;
+    servicios: Array<{ codigo: string; nombre: string; responsabilidad: string; endpoints: string[]; moduloActual: string }>;
+  };
+  antipatrones?: {
+    definicion: string;
+    evitadosEnDeligo: Array<{
+      codigo: string;
+      nombre: string;
+      problema: string;
+      comoLoEvitamos: string;
+      patronQueAyuda: string;
+    }>;
+  };
 }

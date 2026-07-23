@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DeliGo — Pitch Shark Tank (20 slides)</title>
+  <style>
+    :root {
+      --orange: #ff4d2e;
+      --orange-dark: #e03518;
+      --ink: #1a1a1a;
+      --muted: #5c5c5c;
+      --bg: #0f0f10;
+      --card: #ffffff;
+      --cream: #fff7f3;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: #111;
+      color: var(--ink);
+    }
+    .deck { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .toolbar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;
+      justify-content: space-between;
+      background: rgba(17,17,17,.92); color: #fff;
+      padding: 0.85rem 1rem; border-radius: 12px; margin-bottom: 1rem;
+    }
+    .toolbar button, .toolbar a {
+      background: var(--orange); color: #fff; border: 0;
+      padding: 0.55rem 1rem; border-radius: 8px; font-weight: 700;
+      cursor: pointer; text-decoration: none; font-size: 0.9rem;
+    }
+    .toolbar .ghost { background: #333; }
+    .slide {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 2.5rem 2.75rem;
+      margin-bottom: 1.25rem;
+      min-height: 520px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+      border-top: 6px solid var(--orange);
+      page-break-after: always;
+    }
+    .slide.dark {
+      background: linear-gradient(145deg, #1a1a1a 0%, #2a1510 100%);
+      color: #fff; border-top-color: #ff6b4a;
+    }
+    .slide.dark .muted, .slide.dark .speak { color: #cfcfcf; }
+    .num {
+      display: inline-block; background: var(--orange); color: #fff;
+      font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.65rem;
+      border-radius: 999px; margin-bottom: 1rem; letter-spacing: .04em;
+    }
+    h1 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.1; margin-bottom: 0.75rem; }
+    h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.15; margin-bottom: 1rem; }
+    .tagline { font-size: 1.25rem; color: var(--orange); font-weight: 700; margin-bottom: 1rem; }
+    .muted { color: var(--muted); margin-bottom: 1rem; }
+    ul { margin: 1rem 0 1.25rem 1.2rem; }
+    li { margin: 0.45rem 0; font-size: 1.05rem; }
+    .speak {
+      margin-top: 1.5rem; padding: 1rem 1.15rem;
+      background: var(--cream); border-radius: 12px;
+      font-size: 0.95rem; color: #333; border-left: 4px solid var(--orange);
+    }
+    .slide.dark .speak { background: rgba(255,255,255,.08); color: #eee; }
+    .visual {
+      font-size: 0.85rem; color: var(--muted); margin-top: 0.75rem;
+      font-style: italic;
+    }
+    .team { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem; }
+    .chip {
+      background: #fff0eb; color: var(--orange-dark);
+      padding: 0.45rem 0.85rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem;
+    }
+    .slide.dark .chip { background: rgba(255,77,46,.2); color: #ffb4a4; }
+    .cta { font-size: 1.4rem; font-weight: 800; margin-top: 1rem; }
+    .link { color: var(--orange); font-weight: 700; word-break: break-all; }
+    @media print {
+      .toolbar { display: none; }
+      .slide { box-shadow: none; border: 1px solid #ddd; break-after: page; }
+      body { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="toolbar">
+      <strong>DeliGo · Pitch Shark Tank · 20 slides</strong>
+      <div>
+        <button class="ghost" onclick="window.print()">Imprimir / PDF</button>
+        <a href="https://www.canva.com" target="_blank" rel="noreferrer">Abrir Canva</a>
+      </div>
+    </div>
+
+    <!-- 1 -->
+    <section class="slide dark">
+      <span class="num">SLIDE 1 / 20</span>
+      <h1>DeliGo</h1>
+      <p class="tagline">La comida que amas, en la puerta de tu casa.</p>
+      <ul>
+        <li>Delivery digital hecho en Perú</li>
+        <li>Producto real, no solo una idea</li>
+        <li>Pitch estilo Shark Tank</li>
+      </ul>
+      <div class="team">
+        <span class="chip">Valery Terrones Perez</span>
+        <span class="chip">Renato Solis Benito</span>
+        <span class="chip">Yummy Untiveros Vargas</span>
+      </div>
+      <p class="speak"><strong>Habla:</strong> “Hoy no venimos a pedir una nota. Venimos a presentar DeliGo: un sistema de delivery listo para demostrar.”</p>
+      <p class="visual">Visual: logo grande + comida + puerta + 3 nombres abajo.</p>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide">
+      <span class="num">SLIDE 2 / 20</span>
+      <h2>El problema</h2>
+      <ul>
+        <li>Pedir delivery sigue siendo confuso</li>
+        <li>Poco control del estado del pedido</li>
+        <li>Restaurantes y repartidores desconectados</li>
+        <li>Sin auditoría clara de operaciones</li>
+        <li>Costos altos en mapas y herramientas</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “En Lima pedimos comida todos los días, pero la experiencia sigue rota: el cliente no ve, el local no controla y nadie audita.”</p>
+      <p class="visual">Visual: persona frustrada con app + íconos de reloj y mapa.</p>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide">
+      <span class="num">SLIDE 3 / 20</span>
+      <h2>La solución: DeliGo</h2>
+      <p class="muted">Una plataforma de delivery que conecta cliente, restaurante, repartidor y administrador.</p>
+      <ul>
+        <li>Pedidos claros en soles</li>
+        <li>Seguimiento en mapa en vivo</li>
+        <li>Roles reales de operación</li>
+        <li>Auditoría con logs seguros</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “DeliGo no es solo una web bonita: es un flujo completo de negocio, desde el pedido hasta la entrega.”</p>
+      <p class="visual">Visual: mockup celular + 4 roles alrededor.</p>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide">
+      <span class="num">SLIDE 4 / 20</span>
+      <h2>Demo: recorrido del usuario</h2>
+      <ul>
+        <li>Login con cuenta</li>
+        <li>Elige restaurante</li>
+        <li>Arma menú y carrito</li>
+        <li>Confirma entrega y pago</li>
+        <li>Sigue el pedido en mapa</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “En menos de un minuto: login, menú, pedido y seguimiento. Eso es el MVP que ya funciona.”</p>
+      <p class="visual">Visual: 5 capturas en línea tipo storyboard.</p>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide">
+      <span class="num">SLIDE 5 / 20</span>
+      <h2>Mercado y oportunidad — Lima, Perú</h2>
+      <ul>
+        <li>Delivery ya es hábito digital</li>
+        <li>Usuarios buscan rapidez y claridad</li>
+        <li>Locales necesitan herramientas simples</li>
+        <li>Oportunidad: producto local y técnico</li>
+        <li>Proyección académica con foco real</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “No inventamos cifras millonarias. Mostramos oportunidad real: Lima pide comida, y pide mejor experiencia.”</p>
+      <p class="visual">Visual: mapa de Lima + flechas de crecimiento.</p>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide">
+      <span class="num">SLIDE 6 / 20</span>
+      <h2>Propuesta de valor única</h2>
+      <ul>
+        <li>Mapa gratis (sin Google de pago)</li>
+        <li>Roles operativos reales</li>
+        <li>Logs solo para administrador</li>
+        <li>Software con patrones de diseño</li>
+        <li>Precios en soles, pensado en Perú</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “No solo entregamos comida: entregamos control, trazabilidad y una arquitectura lista para crecer.”</p>
+      <p class="visual">Visual: 4 pilares con íconos (mapa, roles, logs, patrones).</p>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide">
+      <span class="num">SLIDE 7 / 20</span>
+      <h2>Cómo funciona el negocio</h2>
+      <ul>
+        <li>Cliente pide</li>
+        <li>Restaurante prepara</li>
+        <li>Repartidor entrega</li>
+        <li>Admin audita</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “Cuatro actores, un mismo sistema. Cada uno ve solo lo que necesita.”</p>
+      <p class="visual">Visual: diagrama circular de 4 pasos.</p>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide">
+      <span class="num">SLIDE 8 / 20</span>
+      <h2>Roles del sistema</h2>
+      <ul>
+        <li><strong>Cliente:</strong> pide y sigue su orden</li>
+        <li><strong>Restaurante:</strong> marca preparación</li>
+        <li><strong>Repartidor:</strong> en camino y entregado</li>
+        <li><strong>Admin:</strong> ve logs y control total</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “Esto no es un login genérico. Son permisos reales: el cliente no ve logs; el admin sí.”</p>
+      <p class="visual">Visual: 4 tarjetas de rol con pantallas distintas.</p>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide">
+      <span class="num">SLIDE 9 / 20</span>
+      <h2>Monetización (modelo propuesto)</h2>
+      <ul>
+        <li>Comisión por pedido</li>
+        <li>Cargo por envío express</li>
+        <li>Extras: propina, seguro, eco</li>
+        <li>Plan B2B para restaurantes</li>
+        <li>Precios demo: pizza S/ 32–42</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “Hoy es demo académica. Mañana puede cobrar comisión, express y suscripción a locales.”</p>
+      <p class="visual">Visual: billetes S/ + ticket de pedido.</p>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide">
+      <span class="num">SLIDE 10 / 20</span>
+      <h2>Arquitectura técnica</h2>
+      <ul>
+        <li>Frontend: Angular</li>
+        <li>Backend: Node.js + Express</li>
+        <li>Base de datos: SQLite + DBeaver</li>
+        <li>Código en GitHub</li>
+        <li>API REST conectando todo</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “Arquitectura clara: lo que ves en pantalla ya corre con lógica profesional en el servidor.”</p>
+      <p class="visual">Visual: cajas Frontend → Backend → BD.</p>
+    </section>
+
+    <!-- 11 -->
+    <section class="slide">
+      <span class="num">SLIDE 11 / 20</span>
+      <h2>Patrones — Singleton + Factory</h2>
+      <ul>
+        <li><strong>Singleton:</strong> una BD, una sesión, un log</li>
+        <li>Evita caos y conexiones duplicadas</li>
+        <li><strong>Factory:</strong> crea el tipo de pedido</li>
+        <li>Estándar, express o programado</li>
+        <li>Envío: S/ 5 · S/ 8 · S/ 3.50</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “Singleton da estabilidad. Factory convierte una elección del cliente en una clase de negocio distinta.”</p>
+      <p class="visual">Visual: icono “1 instancia” + 3 tipos de pedido.</p>
+    </section>
+
+    <!-- 12 -->
+    <section class="slide">
+      <span class="num">SLIDE 12 / 20</span>
+      <h2>Patrones — Decorator + Composite</h2>
+      <ul>
+        <li><strong>Decorator:</strong> extras sin romper el pedido</li>
+        <li>Propina S/ 3 · Seguro S/ 2 · Eco S/ 1</li>
+        <li><strong>Composite:</strong> menú en árbol</li>
+        <li>Categorías → productos</li>
+        <li>Más claro para el usuario</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “Decorator suma valor. Composite organiza el menú como un árbol real de restaurante.”</p>
+      <p class="visual">Visual: capas de extras + menú tipo árbol.</p>
+    </section>
+
+    <!-- 13 -->
+    <section class="slide">
+      <span class="num">SLIDE 13 / 20</span>
+      <h2>Base de datos y auditoría</h2>
+      <ul>
+        <li>Tablas: usuarios, restaurantes, productos, pedidos, logs</li>
+        <li>Columna rol en usuarios</li>
+        <li>Logs registran cada acción clave</li>
+        <li>Solo admin puede verlos</li>
+        <li>Confianza y trazabilidad</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “Si algo falla, no adivinamos: revisamos logs. Eso es seguridad de operación.”</p>
+      <p class="visual">Visual: tabla DBeaver + candado “solo admin”.</p>
+    </section>
+
+    <!-- 14 -->
+    <section class="slide">
+      <span class="num">SLIDE 14 / 20</span>
+      <h2>Features “wow” para la demo</h2>
+      <ul>
+        <li>Mapa en vivo gratis</li>
+        <li>Precios en soles peruanos</li>
+        <li>Yape / tarjeta / efectivo (demo)</li>
+        <li>Cancelar pedido</li>
+        <li>Filtros: pendientes y entregados</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “En vivo se ve el repartidor moverse. Eso cierra el pitch: no es teoría, se siente producto.”</p>
+      <p class="visual">Visual: mapa + iconos Yape + filtro.</p>
+    </section>
+
+    <!-- 15 -->
+    <section class="slide">
+      <span class="num">SLIDE 15 / 20</span>
+      <h2>Tracción: qué YA está construido</h2>
+      <ul>
+        <li>MVP web funcional</li>
+        <li>Login y roles operando</li>
+        <li>Menú, carrito y pedidos</li>
+        <li>Seguimiento con mapa</li>
+        <li>Repo en GitHub listo</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “No pedimos creer en una idea. Pedimos validar un producto que ya corre.”</p>
+      <p class="visual">Visual: checklist verde de avance.</p>
+    </section>
+
+    <!-- 16 -->
+    <section class="slide">
+      <span class="num">SLIDE 16 / 20</span>
+      <h2>Competencia y diferenciación</h2>
+      <ul>
+        <li>Rappi / PedidosYa: gigantes</li>
+        <li>DeliGo: control técnico y educativo</li>
+        <li>Roles y auditoría visibles</li>
+        <li>Mapa sin costo de API paga</li>
+        <li>Base lista para evolucionar</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “No competimos por tamaño hoy. Competimos por claridad, costo y arquitectura limpia.”</p>
+      <p class="visual">Visual: comparación 2 columnas vs grandes apps.</p>
+    </section>
+
+    <!-- 17 -->
+    <section class="slide">
+      <span class="num">SLIDE 17 / 20</span>
+      <h2>Roadmap 6–12 meses</h2>
+      <ul>
+        <li>Pagos reales (Yape / tarjeta)</li>
+        <li>App móvil</li>
+        <li>Más restaurantes</li>
+        <li>Analytics para admin</li>
+        <li>Escalado a más distritos</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “El siguiente paso no es empezar: es escalar lo que ya funciona.”</p>
+      <p class="visual">Visual: línea de tiempo 6 / 9 / 12 meses.</p>
+    </section>
+
+    <!-- 18 -->
+    <section class="slide">
+      <span class="num">SLIDE 18 / 20</span>
+      <h2>El equipo</h2>
+      <ul>
+        <li><strong>Valery Terrones Perez</strong></li>
+        <li><strong>Renato Solis Benito</strong></li>
+        <li><strong>Yummy Untiveros Vargas</strong></li>
+        <li>Diseño de patrones + full stack</li>
+        <li>Producto académico con mentalidad de startup</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “Somos tres. Diseñamos, construimos y demostramos. Ese es nuestro diferencial.”</p>
+      <p class="visual">Visual: 3 fotos/avatares + roles del equipo.</p>
+    </section>
+
+    <!-- 19 -->
+    <section class="slide dark">
+      <span class="num">SLIDE 19 / 20</span>
+      <h2>The Ask</h2>
+      <ul>
+        <li>Validación del producto</li>
+        <li>Mentoría para siguiente fase</li>
+        <li>Apoyo para pagos reales</li>
+        <li>Socios / feedback de negocio</li>
+        <li>No pedimos solo una nota</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “No pedimos solo una nota: pedimos validación de un producto real. ¿Quién se suma a la siguiente fase de DeliGo?”</p>
+      <p class="visual">Visual: mano extendida / handshake + logo.</p>
+    </section>
+
+    <!-- 20 -->
+    <section class="slide dark">
+      <span class="num">SLIDE 20 / 20</span>
+      <h1>¿Quién quiere unirse a DeliGo?</h1>
+      <p class="cta">La comida que amas, en la puerta de tu casa.</p>
+      <ul>
+        <li>Demo: http://localhost:4200</li>
+        <li class="link">GitHub: https://github.com/valerybrillyt/deligo</li>
+        <li>Valery · Renato · Yummy</li>
+      </ul>
+      <p class="speak"><strong>Habla:</strong> “Gracias. Estamos listos para la demo… y para el trato.”</p>
+      <p class="visual">Visual: logo grande + QR (GitHub/demo) + nombres.</p>
+    </section>
+
+    <section class="slide">
+      <span class="num">NOTAS CANVA</span>
+      <h2>Notas para Canva / NotebookLM Slide Deck</h2>
+      <ul>
+        <li><strong>Tipografía:</strong> títulos grandes, máximo 6 bullets</li>
+        <li><strong>Colores:</strong> naranja #FF4D2E, rojo suave, blanco, gris oscuro</li>
+        <li><strong>Evitar:</strong> púrpura genérico y texto denso</li>
+        <li><strong>Tiempo oral:</strong> 6–8 minutos total</li>
+        <li><strong>Tip 1:</strong> Valery abre con hook (slides 1–3)</li>
+        <li><strong>Tip 2:</strong> Renato demo y producto (4–9)</li>
+        <li><strong>Tip 3:</strong> Yummy patrones y BD (10–13)</li>
+        <li><strong>Tip 4:</strong> Los tres cierran Ask + CTA (19–20)</li>
+        <li><strong>Tip 5:</strong> Mostrar mapa en vivo al final</li>
+      </ul>
+      <p class="speak">En Canva: “Crear presentación moderna tipo pitch deck, 20 diapositivas, naranja/rojo delivery, fondos limpios, íconos de comida, mapa y tecnología.”</p>
+    </section>
+  </div>
+</body>
+</html>
